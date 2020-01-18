@@ -7,7 +7,10 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.PWMVictorSPX;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -15,6 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Joystick;
 import frc.systems.Drivetrain;
 import frc.systems.sensors.Limelight;
+import com.analog.adis16448.frc.ADIS16448_IMU;
 
 
 public class Robot extends TimedRobot {
@@ -24,6 +28,13 @@ public class Robot extends TimedRobot {
 
   public static Timer systemTimer;
   public static Limelight mLimelight;
+  
+  private boolean m_runCal = false;
+  private boolean m_configCal = false;
+  private boolean m_reset = false;
+  private boolean m_setYawAxis = false;
+  public static ADIS16448_IMU m_imu = new ADIS16448_IMU();
+  public static VisualOdometer m_visOdometer = new VisualOdometer();
 
   Notifier driveRateGroup;
   public static Drivetrain mDriveSystem;
@@ -39,6 +50,21 @@ public class Robot extends TimedRobot {
     leftJoystick = new Joystick(0);
     rightJoystick = new Joystick(1);
     xboxJoystick = new Joystick(2);
+    
+    // Set IMU settings
+    if (m_configCal) {
+      m_imu.configCalTime(8);
+      m_configCal = SmartDashboard.putBoolean("ConfigCal", false);
+    }
+    if (m_reset) {
+      m_imu.reset();
+      m_reset = SmartDashboard.putBoolean("Reset", false);
+    }
+    if (m_runCal) {
+      m_imu.calibrate();
+      m_runCal = SmartDashboard.putBoolean("RunCal", false);
+    }
+
   }
 
   /**
@@ -51,6 +77,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+
+	m_visOdometer.update();
+
   }
 
   /**
@@ -74,7 +103,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    
+
+	m_visOdometer.update();
   }
 
   /**
