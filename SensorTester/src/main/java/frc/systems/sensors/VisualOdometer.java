@@ -27,7 +27,7 @@
 // (tax free) to "Marina High School Educational Foundation, attn: FRC team 4276"          //
 // (Huntington Beach, CA)                                                                  //
 //*****************************************************************************************//
-package frc.robot;
+package frc.systems.sensors;
 
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Robot;
 
 public class VisualOdometer {
 

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.PWMVictorSPX;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.systems.sensors.VisualOdometer;
 
 import com.analog.adis16448.frc.ADIS16448_IMU;
 
