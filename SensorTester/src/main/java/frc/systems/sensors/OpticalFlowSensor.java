@@ -29,24 +29,182 @@
 //*****************************************************************************************//
 package frc.systems.sensors;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class OpticalFlowSensor extends SPI {
     public short deltaX = 0;
     public short deltaY = 0;
 
-    public OpticalFlowSensor(SPI.Port spiChipSelet) {
-        super(spiChipSelet);
+    public OpticalFlowSensor(SPI.Port spiChipSelect) {
+        super(spiChipSelect);
     }
     
+    private static short toUShort(byte[] buf) {
+        return (short) (((buf[0] & 0xFF) << 8) + ((buf[1] & 0xFF) << 0));
+      }  
+    
+    private short readRegister(final int reg) {
+        ByteBuffer buf = ByteBuffer.allocate(2);
+        buf.order(ByteOrder.BIG_ENDIAN);
+        buf.put(0, (byte) 0);
+        buf.put(1, (byte) (reg & 0x7f));
+
+        int nBytes = write(buf, 2);
+        nBytes = read(false, buf, 2);
+       
+        SmartDashboard.putNumber("buf0", buf.array()[0]);
+        SmartDashboard.putNumber("buf1", buf.array()[1]);
+
+        return toUShort(buf.array());
+    }
+
+    private void readAllRegisters() {
+        // ByteBuffer buf = ByteBuffer.allocateDirect(2);
+        final byte[] buf = new byte[12];
+        // buf.order(ByteOrder.BIG_ENDIAN);
+        buf[0] = 0;
+        buf[1] = 0;
+
+        int nBytes = write(buf, 2);
+        nBytes = read(false, buf, 12);
+
+        return;  // toUShort(buf);
+    }
+
+    private void writeRegister(final int reg, final int val) {
+        // ByteBuffer buf = ByteBuffer.allocateDirect(2);
+        final byte[] buf = new byte[2];
+        // low byte
+        buf[0] = (byte) ((0x80 | reg) | 0x10);
+        buf[1] = (byte) (val & 0xff);
+        int nBytes = write(buf, 2);
+        // high byte
+        buf[0] = (byte) (0x81 | reg);
+        buf[1] = (byte) (val >> 8);
+        nBytes = write(buf, 2);
+    }
+
+    private void initRegisters()
+    {
+        writeRegister(0x7F, 0x00);
+        writeRegister(0x61, 0xAD);
+        writeRegister(0x7F, 0x03);
+        writeRegister(0x40, 0x00);
+        writeRegister(0x7F, 0x05);
+        writeRegister(0x41, 0xB3);
+        writeRegister(0x43, 0xF1);
+        writeRegister(0x45, 0x14);
+        writeRegister(0x5B, 0x32);
+        writeRegister(0x5F, 0x34);
+        writeRegister(0x7B, 0x08);
+        writeRegister(0x7F, 0x06);
+        writeRegister(0x44, 0x1B);
+        writeRegister(0x40, 0xBF);
+        writeRegister(0x4E, 0x3F);
+        writeRegister(0x7F, 0x08);
+        writeRegister(0x65, 0x20);
+        writeRegister(0x6A, 0x18);
+        writeRegister(0x7F, 0x09);
+        writeRegister(0x4F, 0xAF);
+        writeRegister(0x5F, 0x40);
+        writeRegister(0x48, 0x80);
+        writeRegister(0x49, 0x80);
+        writeRegister(0x57, 0x77);
+        writeRegister(0x60, 0x78);
+        writeRegister(0x61, 0x78);
+        writeRegister(0x62, 0x08);
+        writeRegister(0x63, 0x50);
+        writeRegister(0x7F, 0x0A);
+        writeRegister(0x45, 0x60);
+        writeRegister(0x7F, 0x00);
+        writeRegister(0x4D, 0x11);
+        writeRegister(0x55, 0x80);
+        writeRegister(0x74, 0x1F);
+        writeRegister(0x75, 0x1F);
+        writeRegister(0x4A, 0x78);
+        writeRegister(0x4B, 0x78);
+        writeRegister(0x44, 0x08);
+        writeRegister(0x45, 0x50);
+        writeRegister(0x64, 0xFF);
+        writeRegister(0x65, 0x1F);
+        writeRegister(0x7F, 0x14);
+        writeRegister(0x65, 0x60);
+        writeRegister(0x66, 0x08);
+        writeRegister(0x63, 0x78);
+        writeRegister(0x7F, 0x15);
+        writeRegister(0x48, 0x58);
+        writeRegister(0x7F, 0x07);
+        writeRegister(0x41, 0x0D);
+        writeRegister(0x43, 0x14);
+        writeRegister(0x4B, 0x0E);
+        writeRegister(0x45, 0x0F);
+        writeRegister(0x44, 0x42);
+        writeRegister(0x4C, 0x80);
+        writeRegister(0x7F, 0x10);
+        writeRegister(0x5B, 0x02);
+        writeRegister(0x7F, 0x07);
+        writeRegister(0x40, 0x41);
+        writeRegister(0x70, 0x00);
+
+        Timer.delay(0.1);
+        writeRegister(0x32, 0x44);
+        writeRegister(0x7F, 0x07);
+        writeRegister(0x40, 0x40);
+        writeRegister(0x7F, 0x06);
+        writeRegister(0x62, 0xf0);
+        writeRegister(0x63, 0x00);
+        writeRegister(0x7F, 0x0D);
+        writeRegister(0x48, 0xC0);
+        writeRegister(0x6F, 0xd5);
+        writeRegister(0x7F, 0x00);
+        writeRegister(0x5B, 0xa0);
+        writeRegister(0x4E, 0xA8);
+        writeRegister(0x5A, 0x50);
+        writeRegister(0x40, 0x80);
+    }
+
+    boolean reset() {
+        setClockRate(2000000);
+        setMSBFirst();
+        setClockActiveLow();
+        setChipSelectActiveLow();
+    
+        // Power on reset
+        writeRegister(0x3A, 0x5A);
+        Timer.delay(0.5);
+        // Test the SPI communication, checking chipId and inverse chipId
+        short productId = readRegister(0x00);
+        productId &= 0xFF;
+        short revId = readRegister(0x01);
+        revId &= 0xFF;
+        if (productId != 0x49 && revId != 0x49) {
+            return false;
+        }
+
+        // Reading the motion registers one time
+        readRegister(0x02);
+        readRegister(0x03);
+        readRegister(0x04);
+        readRegister(0x05);
+        readRegister(0x06);
+        Timer.delay(0.1);
+
+        initRegisters();
+
+        return true;
+    }
+
     public void getMotion()
     {
-        final byte[] dataToSend = {0x02,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-        final byte[] dataReceived = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-        final int rv = transaction(dataToSend, dataReceived, 12);
-        if(rv != -1) {
-            deltaX = (short) ((dataReceived[4] << 8) | (dataReceived[3] & 0xFF));
-            deltaY = (short) ((dataReceived[6] << 8) | (dataReceived[5] & 0xFF));
-        }
+        deltaX = readRegister(0x03);
+        deltaY = readRegister(0x05);
+
+        readAllRegisters();
+   }
 }
- }
+

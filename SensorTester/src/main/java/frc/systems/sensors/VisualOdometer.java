@@ -29,51 +29,75 @@
 //*****************************************************************************************//
 package frc.systems.sensors;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Robot;
 
 public class VisualOdometer {
 
     private final OpticalFlowSensor m_optFlow_R;
-    private final OpticalFlowSensor m_optFlow_L;
-    private double m_gyroHeading;
+    //private final OpticalFlowSensor m_optFlow_L;
+    private double m_gyroInitialHeading;  // Subtract from raw gyro to get field frame heading field frame
+    private double m_gyroHeadingDegrees;  // field frame direction robot is pointing, but it might be skidding sideways
     private Pose2d m_currentPose;
  
-    private final double CONVERT_FLOW_TICKS_TO_INCHES = 120;  // TODO: Need to calibrate this
+    private final double PI = 3.14159265358979323846264;
+    private final double CONVERT_RADIANS_TO_DEGREES = (180.0 / PI);
+    private final double CONVERT_FLOW_TICKS_TO_INCHES = 23.45;  // TODO: Need to calibrate this
   
     public VisualOdometer()
     {
         m_optFlow_R = new OpticalFlowSensor(SPI.Port.kOnboardCS0);
-        m_optFlow_L = new OpticalFlowSensor(SPI.Port.kOnboardCS1);
-        m_currentPose = new Pose2d();
+        if(!m_optFlow_R.reset())
+        {
+            DriverStation.reportError("Optical Flow( R ) not found", false);
+        }
+        //m_optFlow_L = new OpticalFlowSensor(SPI.Port.kOnboardCS1);
+        //if(!m_optFlow_L.reset())
+        {
+        //    DriverStation.reportError("Optical Flow( L ) not found", false);
+        }
+       m_currentPose = new Pose2d();
      }
 
     public void initPose(final Pose2d initialPositionAndDirection) {
+        //m_gyroInitialHeading = Robot.m_imu.getAngle();
         m_currentPose = initialPositionAndDirection;
     }
 
     public void update() {
         m_optFlow_R.getMotion();
-        m_optFlow_L.getMotion();
-        m_gyroHeading = Robot.m_imu.getAngle();
+        //m_optFlow_L.getMotion();
+        SmartDashboard.putNumber("OptR_X", m_optFlow_R.deltaX);
+        SmartDashboard.putNumber("OptR_Y", m_optFlow_R.deltaY);
+        //SmartDashboard.putNumber("OptL_X", m_optFlow_L.deltaX);
+        //SmartDashboard.putNumber("OptL_Y", m_optFlow_L.deltaY);
+        
+        //m_gyroHeadingDegrees = Robot.m_imu.getAngle() - m_gyroInitialHeading;
 
         // sensors are on opposite sides of robot center, so when the robot rotates they cancel, and when it drives straight they add
-        final double robotFrameDeltaX = ((m_optFlow_R.deltaX + m_optFlow_L.deltaX) / 2) / CONVERT_FLOW_TICKS_TO_INCHES;
-        final double robotFrameDeltaY = ((m_optFlow_R.deltaY + m_optFlow_L.deltaY) / 2) / CONVERT_FLOW_TICKS_TO_INCHES;
-        final Translation2d xlat = new Translation2d(robotFrameDeltaX, robotFrameDeltaY);
-
-        Rotation2d robotFrameVelocityDirection = Rotation2d.fromDegrees(0.0);
-        if(robotFrameDeltaY != 0.0) { 
-            robotFrameVelocityDirection = Rotation2d.fromDegrees(Math.atan(robotFrameDeltaX / robotFrameDeltaY));
+        final double robotFrameDeltaX = 0;  //((m_optFlow_R.deltaX + m_optFlow_L.deltaX) / 2) / CONVERT_FLOW_TICKS_TO_INCHES;
+        final double robotFrameDeltaY = 0;  //((m_optFlow_R.deltaY + m_optFlow_L.deltaY) / 2) / CONVERT_FLOW_TICKS_TO_INCHES;
+        
+        final double robotFrameMagnitude = Math.sqrt(Math.pow(robotFrameDeltaX, 2) + Math.pow(robotFrameDeltaY, 2));
+        double robotFrameDirectionRadians = 0.0;  //Math.atan(robotFrameDeltaX / robotFrameDeltaY);
+        if(robotFrameDeltaX < 0.0)
+        {
+            // 0.0 degrees is straight ahead in robot frame, 180.0 is straight back
+            robotFrameDirectionRadians += PI;
         }
+        final double fieldFrameDirection = (m_gyroHeadingDegrees * CONVERT_RADIANS_TO_DEGREES) + robotFrameDirectionRadians;
 
-        final Transform2d xform = new Transform2d(xlat, robotFrameVelocityDirection);
-         m_currentPose.plus(xform);
+        final double fieldFrameDeltaX = Math.asin(fieldFrameDirection) * robotFrameMagnitude;
+        final double fieldFrameDeltaY = Math.acos(fieldFrameDirection) * robotFrameMagnitude;  
+ 
+        final Translation2d xlat = new Translation2d(fieldFrameDeltaX, fieldFrameDeltaY);
+        final Transform2d xform = new Transform2d(xlat, Rotation2d.fromDegrees(fieldFrameDirection));
+         m_currentPose.transformBy(xform);
          SmartDashboard.putNumber("Current Pose X", m_currentPose.getTranslation().getX());
          SmartDashboard.putNumber("Current Pose Y", m_currentPose.getTranslation().getY());
          SmartDashboard.putNumber("Current Pose HDG", m_currentPose.getRotation().getDegrees());
