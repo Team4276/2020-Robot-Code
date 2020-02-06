@@ -19,6 +19,11 @@ import edu.wpi.first.wpilibj.Joystick;
 import frc.systems.Drivetrain;
 import frc.systems.sensors.Limelight;
 import com.analog.adis16448.frc.ADIS16448_IMU;
+import frc.systems.sensors.VisualOdometer;
+import frc.systems.Intake;
+import frc.systems.Shooter;
+import frc.systems.Turntable;
+import frc.utilities.RoboRioPorts;;
 
 
 public class Robot extends TimedRobot {
@@ -38,6 +43,9 @@ public class Robot extends TimedRobot {
 
   Notifier driveRateGroup;
   public static Drivetrain mDriveSystem;
+  public static Intake mIntake;
+  public static Shooter mShooter;
+  public static Turntable mTurntable;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -50,7 +58,14 @@ public class Robot extends TimedRobot {
     leftJoystick = new Joystick(0);
     rightJoystick = new Joystick(1);
     xboxJoystick = new Joystick(2);
-    
+
+    mDriveSystem = new Drivetrain(true, RoboRioPorts.CAN_DRIVE_L1, RoboRioPorts.CAN_DRIVE_L2,
+    RoboRioPorts.CAN_DRIVE_L3, RoboRioPorts.CAN_DRIVE_R1, RoboRioPorts.CAN_DRIVE_R2, RoboRioPorts.CAN_DRIVE_R3,
+    RoboRioPorts.DRIVE_DOUBLE_SOLENOID_FWD, RoboRioPorts.DRIVE_DOUBLE_SOLENOID_REV, RoboRioPorts.DIO_DRIVE_RIGHT_A,
+    RoboRioPorts.DIO_DRIVE_RIGHT_B, RoboRioPorts.DIO_DRIVE_LEFT_A, RoboRioPorts.DIO_DRIVE_LEFT_B);
+    mIntake = new Intake(RoboRioPorts.CAN_INTAKE_LOW, RoboRioPorts.CAN_INTAKE_UP, RoboRioPorts.CAN_INTAKE_PIV);
+    mShooter = new Shooter(RoboRioPorts.CAN_SHOOTER_SHOOTA, RoboRioPorts.CAN_SHOOTER_SHOOTB, RoboRioPorts.CAN_SHOOTER_FLY);
+    mTurntable = new Turntable(RoboRioPorts.CAN_TURNTABLE_TURN, RoboRioPorts.CODY_PISTON_FWD, RoboRioPorts.CODY_PISTON_REV);
     // Set IMU settings
     if (m_configCal) {
       m_imu.configCalTime(8);

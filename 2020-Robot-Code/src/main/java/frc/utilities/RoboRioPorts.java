@@ -17,10 +17,15 @@ public class RoboRioPorts {
 	public static final int CAN_DRIVE_L2 = 14;
 	public static final int CAN_DRIVE_L3 = 15;
 
-	public static final int CAN_ARM_PIVOT1 = 18;
+	public static final int CAN_INTAKE_LOW = 16;
+	public static final int CAN_INTAKE_UP = 17;
+	public static final int CAN_INTAKE_PIV = 18;
 
-	public static final int CAN_LIFT_FRONT = 16;
-	public static final int CAN_LIFT_BACK = 19;
+	public static final int CAN_SHOOTER_SHOOTA = 19;
+	public static final int CAN_SHOOTER_SHOOTB = 20;
+	public static final int CAN_SHOOTER_FLY = 21;
+
+	public static final int CAN_TURNTABLE_TURN = 22;
 
 	// *** PNUEMATICS ***
 	// Example:
@@ -29,14 +34,8 @@ public class RoboRioPorts {
 	public static final int DRIVE_DOUBLE_SOLENOID_FWD = 0;
 	public static final int DRIVE_DOUBLE_SOLENOID_REV = 1;
 
-	public static final int EJECTOR_PISTON_FWD = 2;
-	public static final int EJECTOR_PISTON_REV = 3;
-
-	public static final int DIVERTER_FWD = 4;
-	public static final int DIVERTER_REV = 5;
-
-	public static final int JACK_FWD = 6;
-	public static final int JACK_REV = 7;
+	public static final int CODY_PISTON_FWD = 2;
+	public static final int CODY_PISTON_REV = 3;
 
 	// *** DIO ***
 	// Example:

@@ -27,7 +27,7 @@
 // (tax free) to "Marina High School Educational Foundation, attn: FRC team 4276"          //
 // (Huntington Beach, CA)                                                                  //
 //*****************************************************************************************//
-package frc.robot;
+package frc.systems.sensors;
 
 import edu.wpi.first.wpilibj.SPI;
 
