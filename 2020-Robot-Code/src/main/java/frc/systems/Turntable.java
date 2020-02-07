@@ -41,11 +41,9 @@ public class Turntable {
 
         if (Robot.xboxJoystick.getRawButton(Xbox.POVup)) {
             codyMotor.set(ControlMode.PercentOutput, 1.0);
-        } 
-        else if (Robot.xboxJoystick.getRawButton(Xbox.POVdown)){
+        } else if (Robot.xboxJoystick.getRawButton(Xbox.POVdown)) {
             codyMotor.set(ControlMode.PercentOutput, -1.0);
-        }
-        else {
+        } else {
             codyMotor.set(ControlMode.PercentOutput, 0);
         }
 

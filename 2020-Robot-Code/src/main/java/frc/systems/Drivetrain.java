@@ -14,6 +14,16 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.util.Units;
+import edu.wpi.first.wpilibj.controller.PIDController;
+import edu.wpi.first.wpilibj.controller.RamseteController;
+import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -50,14 +60,6 @@ public class Drivetrain {
     VictorSPX flDriveX, mlDriveX, blDriveX, frDriveX, mrDriveX, brDriveX;
     private double leftPower = 0;
     private double rightPower = 0;
-    private double hatchDeployHiGear = -0.25;
-    private double hatchDeployLoGear = -0.5;
-    private double climbDelayTime = 1.5;// seconds
-    private double driveFDelay = 0.8;
-    private double retractDelayTime = 2;// seconds
-    private double pullupDelayTime = 1;// seconds
-    private double contDelayTime = 1.5;// seconds
-    private double climbPower = .1;// seconds
     private int timerNum = 0;
     double desired_heading = 0;
     int count = 0;
@@ -74,7 +76,16 @@ public class Drivetrain {
     private double m_quickStopThreshold = kDefaultQuickStopThreshold;
     private double m_quickStopAlpha = kDefaultQuickStopAlpha;
     private double m_quickStopAccumulator;
-    
+
+    Pose2d pose;
+
+    DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(28));
+    DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(getHeading());
+    SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0, 0, 0);// get from characterization tool
+    PIDController pidLeft = new PIDController(Constants.kP, Constants.kI, Constants.kD);
+    PIDController pidRight = new PIDController(Constants.kP, Constants.kI, Constants.kD);
+    RamseteController ram = new RamseteController();
+
     public Drivetrain(boolean isCAN, int FLport, int MLport, int BLport, int FRport, int MRport, int BRport,
             int shifterHi, int shifterLo, int m_right_encoderPortA, int m_right_encoderPortB, int m_left_encoderPortA,
             int m_left_encoderPortB) {
@@ -152,6 +163,7 @@ public class Drivetrain {
         }
         return value;
     }
+
     public void operatorDrive() {
 
         changeMode();
@@ -160,7 +172,7 @@ public class Drivetrain {
         if (Robot.rightJoystick.getRawButton(1)) {
             currentMode = DriveMode.AUTO;
 
-        }  else {
+        } else {
             currentMode = DEFAULT_MODE;
         }
 
@@ -180,10 +192,9 @@ public class Drivetrain {
         switch (currentMode) {
 
         case AUTO:
-            //rotateCam(4, Robot.visionTargetInfo.visionPixelX);
+            // rotateCam(4, Robot.visionTargetInfo.visionPixelX);
             // driveFwd(4, .25);
             LimelightRotate();
-
 
             break;
 
@@ -298,8 +309,8 @@ public class Drivetrain {
 
         case TANK:
 
-        //Robot.mLimelight.setCamMode(1);
-        //Robot.mLimelight.setLedMode(1);
+            // Robot.mLimelight.setCamMode(1);
+            // Robot.mLimelight.setLedMode(1);
 
             resetAuto();
             if (Math.abs(Robot.rightJoystick.getY()) > deadband) {
@@ -448,18 +459,19 @@ public class Drivetrain {
      * @param powerMultiplier from 0 to 1
      * @return status of action (complete)
      */
-    
-    public void LimelightRotate(){
-        
+
+    public void LimelightRotate() {
+
         Robot.mLimelight.RotateTracking();
         assignMotorPower(-Robot.mLimelight.rightSteering, Robot.mLimelight.leftSteering);
 
-     }
-    public void LimelightDrive(){
+    }
+
+    public void LimelightDrive() {
 
         Robot.mLimelight.DriveTracking();
         assignMotorPower(Robot.mLimelight.rightSteering, Robot.mLimelight.leftSteering);
-        
+
     }
 
     public void resetAuto() {
@@ -467,9 +479,53 @@ public class Drivetrain {
         timerNum = 1;
     }
 
-    public boolean autoDriveTest(double desiredCoordinate){
+    public Rotation2d getHeading() {
+        return Rotation2d.fromDegrees(Robot.m_imu.getGyroAngleZ());
+    }
+
+    public boolean autoDriveTest(double desiredCoordinate) {
 
         return false;
+    }
+
+    public DifferentialDriveWheelSpeeds getSpeeds() {
+        return new DifferentialDriveWheelSpeeds(m_left_encoder.getRate(), m_right_encoder.getRate());
+    }
+
+    public DifferentialDriveKinematics getKinematics() {
+        return kinematics;
+    }
+
+    public SimpleMotorFeedforward getFoward() {
+        return feedforward;
+    }
+
+    public PIDController getPidLeft() {
+        return pidLeft;
+    }
+
+    public PIDController getPidRight() {
+        return pidRight;
+    }
+
+    public void updateOdometry() {
+        pose = odometry.update(getHeading(), m_left_encoder.getDistance(), m_right_encoder.getDistance());
+    }
+
+    public Pose2d getPose() {
+        return pose;
+    }
+
+    public void runRamsete() {
+
+        ChassisSpeeds adjustedSpeeds = ram.calculate(getPose(), Robot.mTraj.getGoal());
+        DifferentialDriveWheelSpeeds wheelSpeeds = getKinematics().toWheelSpeeds(adjustedSpeeds);
+
+        double left = wheelSpeeds.leftMetersPerSecond;
+        double right = wheelSpeeds.rightMetersPerSecond;
+
+        double rOutput = pidRight.calculate(m_right_encoder.getDistance(), right);
+        double lOutput = pidLeft.calculate(m_left_encoder.getDistance(), left);
     }
 
     /*
