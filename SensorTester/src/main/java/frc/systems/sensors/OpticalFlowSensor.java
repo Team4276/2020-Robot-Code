@@ -48,19 +48,31 @@ public class OpticalFlowSensor extends SPI {
         return (short) (((buf[0] & 0xFF) << 8) + ((buf[1] & 0xFF) << 0));
       }  
     
-    private short readRegister(final int reg) {
+      private short readRegisterShort(final int reg) {
+        ByteBuffer buf = ByteBuffer.allocate(2);
+        buf.order(ByteOrder.BIG_ENDIAN);
+        buf.put(0, (byte) 0);
+        buf.put(1, (byte) (reg & 0x7f));
+
+        write(buf, 2);
+        read(false, buf, 2);
+       
+        SmartDashboard.putNumber("buf0", buf.array()[0]);
+        SmartDashboard.putNumber("buf1", buf.array()[1]);
+
+        return toUShort(buf.array());
+    }
+
+    private byte readRegisterByte(final int reg) {
         ByteBuffer buf = ByteBuffer.allocate(2);
         buf.order(ByteOrder.BIG_ENDIAN);
         buf.put(0, (byte) 0);
         buf.put(1, (byte) (reg & 0x7f));
 
         int nBytes = write(buf, 2);
-        nBytes = read(false, buf, 2);
+        nBytes = read(false, buf, 1);
        
-        SmartDashboard.putNumber("buf0", buf.array()[0]);
-        SmartDashboard.putNumber("buf1", buf.array()[1]);
-
-        return toUShort(buf.array());
+        return buf.get();
     }
 
     private void readAllRegisters() {
@@ -69,9 +81,19 @@ public class OpticalFlowSensor extends SPI {
         // buf.order(ByteOrder.BIG_ENDIAN);
         buf[0] = 0;
         buf[1] = 0;
+        buf[2] = 0;
+        buf[3] = 0;
+        buf[4] = 0;
+        buf[5] = 0;
+        buf[6] = 0;
+        buf[7] = 0;
+        buf[8] = 0;
+        buf[9] = 0;
+        buf[10] = 0;
+        buf[11] = 0;
 
-        int nBytes = write(buf, 2);
-        nBytes = read(false, buf, 12);
+        write(buf, 12);
+        read(false, buf, 12);
 
         return;  // toUShort(buf);
     }
@@ -82,15 +104,16 @@ public class OpticalFlowSensor extends SPI {
         // low byte
         buf[0] = (byte) ((0x80 | reg) | 0x10);
         buf[1] = (byte) (val & 0xff);
-        int nBytes = write(buf, 2);
+        write(buf, 2);
         // high byte
         buf[0] = (byte) (0x81 | reg);
         buf[1] = (byte) (val >> 8);
-        nBytes = write(buf, 2);
+        write(buf, 2);
     }
 
     private void initRegisters()
     {
+        // Performance Optimization registers
         writeRegister(0x7F, 0x00);
         writeRegister(0x61, 0xAD);
         writeRegister(0x7F, 0x03);
@@ -106,6 +129,7 @@ public class OpticalFlowSensor extends SPI {
         writeRegister(0x44, 0x1B);
         writeRegister(0x40, 0xBF);
         writeRegister(0x4E, 0x3F);
+
         writeRegister(0x7F, 0x08);
         writeRegister(0x65, 0x20);
         writeRegister(0x6A, 0x18);
@@ -169,29 +193,30 @@ public class OpticalFlowSensor extends SPI {
     }
 
     boolean reset() {
-        setClockRate(2000000);
+        /*
+        setClockRate(1000000);
         setMSBFirst();
         setClockActiveLow();
         setChipSelectActiveLow();
-    
+    */
         // Power on reset
         writeRegister(0x3A, 0x5A);
         Timer.delay(0.5);
         // Test the SPI communication, checking chipId and inverse chipId
-        short productId = readRegister(0x00);
+        short productId = readRegisterShort(0x00);
         productId &= 0xFF;
-        short revId = readRegister(0x01);
+        short revId = readRegisterShort(0x01);
         revId &= 0xFF;
         if (productId != 0x49 && revId != 0x49) {
             return false;
         }
 
         // Reading the motion registers one time
-        readRegister(0x02);
-        readRegister(0x03);
-        readRegister(0x04);
-        readRegister(0x05);
-        readRegister(0x06);
+        readRegisterByte(0x02);
+        readRegisterByte(0x03);
+        readRegisterByte(0x04);
+        readRegisterByte(0x05);
+        readRegisterByte(0x06);
         Timer.delay(0.1);
 
         initRegisters();
@@ -201,10 +226,20 @@ public class OpticalFlowSensor extends SPI {
 
     public void getMotion()
     {
-        deltaX = readRegister(0x03);
-        deltaY = readRegister(0x05);
+        // Read the motion register (freezes the delta-X and delta-Y register so they can be read)
+        byte motionRegister = readRegisterByte(0x02);
 
-        readAllRegisters();
+        if(0 != (motionRegister & 0x80)) {
+            // If Bit 7 is set, Delta_X_L, Delta_X_H, Delta_Y_L, Delta_Y_H, SQUAL and Shutter_Upper registers
+            // should be read in sequence to get the accumulated motion.
+            //      Note: If Delta_X_L, Delta_X_H, Delta_Y_L and Delta_Y_H registers are not read before the motion
+            //      register is read for the second time, the data in Delta_X_L, Delta_X_H, Delta_Y_L and Delta_Y_H
+            //      will be lost.   
+            deltaX = readRegisterShort(0x03);
+            deltaY = readRegisterShort(0x05);
+            byte squal = readRegisterByte(0x07);
+            byte shutter_upper = readRegisterByte(0x0C);
+       }
    }
 }
 
