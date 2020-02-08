@@ -1,15 +1,14 @@
-package org.usfirst.frc.team4276.robot;
+package frc.systems.sensors;
 
 import java.util.TimerTask;
 
 import edu.wpi.first.wpilibj.I2C;
-import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.I2C.Port;
-import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.smartdashboard.*;
+import frc.robot.Robot;
 
-public class LIDAR implements PIDSource {
+public class LIDAR {
 	private I2C i2c;
 	private byte[] distance;
 	private java.util.Timer updater;
@@ -86,17 +85,5 @@ public class LIDAR implements PIDSource {
 				}
 			}
 		}
-	}
-
-	@Override
-	public void setPIDSourceType(PIDSourceType pidSource) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public PIDSourceType getPIDSourceType() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

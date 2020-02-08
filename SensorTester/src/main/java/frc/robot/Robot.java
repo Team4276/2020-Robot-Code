@@ -12,11 +12,13 @@ import com.cuforge.libcu.Lasershark;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.PWMVictorSPX;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.I2C.Port;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.systems.sensors.LIDAR;
 import frc.systems.sensors.VisualOdometer;
 
 /**
@@ -28,16 +30,17 @@ public class Robot extends TimedRobot {
   private Joystick m_leftStick;
   private Joystick m_rightStick;
 
-  private boolean m_runCal = false;
-  private boolean m_configCal = false;
-  private boolean m_reset = false;
-  private boolean m_setYawAxis = false;
+  
   //public static final ADIS16448_IMU m_imu = new ADIS16448_IMU();
   public static Lasershark m_lasershark = new Lasershark(0);
-  public static VisualOdometer m_visOdometer = new VisualOdometer();
-
   public static double m_lidarDistanceFeet = 0;
 
+  public static VisualOdometer m_visOdometer = new VisualOdometer();
+
+  public static LIDAR m_lidarLite = new LIDAR(Port.kMXP);
+  public static int g_nSequenceLidar = 0;
+	public static int g_lidarDistanceCentimeters = 0;
+  
   @Override
   public void robotInit() {
     m_myRobot = new DifferentialDrive(new PWMVictorSPX(0), new PWMVictorSPX(1));
@@ -49,6 +52,8 @@ public class Robot extends TimedRobot {
     Rotation2d initialRotationFieldRelative = Rotation2d.fromDegrees(180.0);
     Pose2d initialPose = new Pose2d(initialX, initialY, initialRotationFieldRelative);
     m_visOdometer.initPose(initialPose);
+
+    m_lidarLite.start(20);
   }
 
   @Override
