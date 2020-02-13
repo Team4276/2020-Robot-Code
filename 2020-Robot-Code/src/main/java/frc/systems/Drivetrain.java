@@ -80,7 +80,7 @@ public class Drivetrain {
     Pose2d pose;
 
     DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(28));
-    DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(getHeading());
+   // DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(getHeading());
     SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0, 0, 0);// get from characterization tool
     PIDController pidLeft = new PIDController(Constants.kP, Constants.kI, Constants.kD);
     PIDController pidRight = new PIDController(Constants.kP, Constants.kI, Constants.kD);
@@ -478,11 +478,11 @@ public class Drivetrain {
         methodInit = true;
         timerNum = 1;
     }
-
+/*
     public Rotation2d getHeading() {
         return Rotation2d.fromDegrees(Robot.m_imu.getGyroAngleZ());
     }
-
+*/
     public boolean autoDriveTest(double desiredCoordinate) {
 
         return false;
@@ -507,7 +507,7 @@ public class Drivetrain {
     public PIDController getPidRight() {
         return pidRight;
     }
-
+/*
     public void updateOdometry() {
         pose = odometry.update(getHeading(), m_left_encoder.getDistance(), m_right_encoder.getDistance());
     }

@@ -61,7 +61,7 @@ public class VisualOdometer {
     public void update() {
         m_optFlow_R.getMotion();
         m_optFlow_L.getMotion();
-        m_gyroHeading = Robot.m_imu.getAngle();
+        //m_gyroHeading = Robot.m_imu.getAngle();
 
         // sensors are on opposite sides of robot center, so when the robot rotates they cancel, and when it drives straight they add
         final double robotFrameDeltaX = ((m_optFlow_R.deltaX + m_optFlow_L.deltaX) / 2) / CONVERT_FLOW_TICKS_TO_INCHES;

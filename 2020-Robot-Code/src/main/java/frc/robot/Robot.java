@@ -7,15 +7,20 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import com.analog.adis16448.frc.ADIS16448_IMU;
+import edu.wpi.first.wpilibj.Notifier;
+import edu.wpi.first.wpilibj.I2C;
 
+import frc.systems.sensors.Cameras;
+import frc.systems.sensors.IMU;
+//import frc.systems.sensors.ColorSen;
+//import frc.systems.sensors.ADIS16448_IMU;
+import frc.systems.sensors.Limelight;
+import frc.utilities.RoboRioPorts;
 import frc.systems.Drivetrain;
+import edu.wpi.first.wpilibj.Joystick;
 import frc.systems.sensors.Limelight;
 import frc.systems.sensors.VisualOdometer;
 import frc.systems.Intake;
@@ -23,28 +28,45 @@ import frc.systems.Shooter;
 import frc.systems.Turntable;
 import frc.auton.PathTrajectory;
 
-import frc.utilities.RoboRioPorts;
-
+/**
+ * The VM is configured to automatically run this class, and to call the
+ * functions corresponding to each mode, as described in the TimedRobot
+ * documentation. If you change the name of this class or the package after
+ * creating this project, you must also update the build.gradle file in the
+ * project.
+ */
 public class Robot extends TimedRobot {
-  public static Joystick rightJoystick;
+  //public static ColorSen m_ColorSen;
   public static Joystick leftJoystick;
+  public static Joystick rightJoystick;
   public static Joystick xboxJoystick;
-
-  public boolean isEnabled;
-  public static PathTrajectory mTraj;
-
   public static Timer systemTimer;
+  //public static IMU mImu;
+  //public static ADIS16448_IMU robotIMU;
   public static Limelight mLimelight;
-
+  public static boolean isEnabled;
   private boolean m_runCal = false;
   private boolean m_configCal = false;
   private boolean m_reset = false;
   private boolean m_setYawAxis = false;
-  public static ADIS16448_IMU m_imu = new ADIS16448_IMU();
+  //public static ADIS16448_IMU m_imu = new ADIS16448_IMU();
   public static VisualOdometer m_visOdometer = new VisualOdometer();
 
+
+  public static int nSequenceVisionSystem;
+  //public static JTargetInfo visionTargetInfo;
+
+  Cameras robotCameraSystem;
+  //JReceiver visionInfoReceiver;
+  Thread visionThread;
+
+  //public static DashboardInterface mSDBInterface;
+
+  Notifier shoot;
+  //public static shooterTest mShooterTest;
+
   Notifier driveRateGroup;
-  public static Drivetrain mDrivetrain;
+  public static Drivetrain mDriveSystem;
 
   Notifier intakeRateGroup;
   public static Intake mIntake;
@@ -55,44 +77,41 @@ public class Robot extends TimedRobot {
   Notifier turntableRateGroup;
   public static Turntable mTurntable;
 
+  private final I2C.Port i2cPort = I2C.Port.kOnboard;
+
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
    */
   @Override
   public void robotInit() {
+    systemTimer = new Timer();
+    //mImu = new IMU();
     mLimelight = new Limelight();
+    //m_ColorSen = new ColorSen(i2cPort);
+  //  mLED = new LEDControl(RoboRioPorts.ENABLE_PIN, RoboRioPorts.INTAKE_PIN, RoboRioPorts.BALL_PIN, RoboRioPorts.SHOOT_PIN);
+
+    robotCameraSystem = new Cameras();
 
     leftJoystick = new Joystick(0);
     rightJoystick = new Joystick(1);
     xboxJoystick = new Joystick(2);
 
-    mTraj = new PathTrajectory();
-
-    mDrivetrain = new Drivetrain(true, RoboRioPorts.CAN_DRIVE_L1, RoboRioPorts.CAN_DRIVE_L2, RoboRioPorts.CAN_DRIVE_L3,
-        RoboRioPorts.CAN_DRIVE_R1, RoboRioPorts.CAN_DRIVE_R2, RoboRioPorts.CAN_DRIVE_R3,
+    mDriveSystem = new Drivetrain(true, RoboRioPorts.CAN_DRIVE_L1, RoboRioPorts.CAN_DRIVE_L2,
+        RoboRioPorts.CAN_DRIVE_L3, RoboRioPorts.CAN_DRIVE_R1, RoboRioPorts.CAN_DRIVE_R2, RoboRioPorts.CAN_DRIVE_R3,
         RoboRioPorts.DRIVE_DOUBLE_SOLENOID_FWD, RoboRioPorts.DRIVE_DOUBLE_SOLENOID_REV, RoboRioPorts.DIO_DRIVE_RIGHT_A,
         RoboRioPorts.DIO_DRIVE_RIGHT_B, RoboRioPorts.DIO_DRIVE_LEFT_A, RoboRioPorts.DIO_DRIVE_LEFT_B);
+
+ 
+    driveRateGroup = new Notifier(mDriveSystem::operatorDrive);
+
     mIntake = new Intake(RoboRioPorts.CAN_INTAKE_LOW, RoboRioPorts.CAN_INTAKE_UP, RoboRioPorts.CAN_INTAKE_PIV);
     mShooter = new Shooter(RoboRioPorts.CAN_SHOOTER_SHOOTA, RoboRioPorts.CAN_SHOOTER_SHOOTB,
         RoboRioPorts.CAN_SHOOTER_FLY);
     mTurntable = new Turntable(RoboRioPorts.CAN_TURNTABLE_TURN, RoboRioPorts.CODY_PISTON_FWD,
         RoboRioPorts.CODY_PISTON_REV);
-    // Set IMU settings
-    if (m_configCal) {
-      m_imu.configCalTime(8);
-      m_configCal = SmartDashboard.putBoolean("ConfigCal", false);
-    }
-    if (m_reset) {
-      m_imu.reset();
-      m_reset = SmartDashboard.putBoolean("Reset", false);
-    }
-    if (m_runCal) {
-      m_imu.calibrate();
-      m_runCal = SmartDashboard.putBoolean("RunCal", false);
-    }
 
-    driveRateGroup = new Notifier(mDrivetrain::operatorDrive);
+    driveRateGroup = new Notifier(mDriveSystem::operatorDrive);
     intakeRateGroup = new Notifier(mIntake::performMainProcessing);
     shooterRateGroup = new Notifier(mShooter::performMainProcessing);
     turntableRateGroup = new Notifier(mTurntable::performMainProcessing);
@@ -115,9 +134,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-
-    m_visOdometer.update();
-
   }
 
   /**
@@ -135,6 +151,8 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
 
+    robotCameraSystem.mainCamera.setExposureHoldCurrent();
+    mDriveSystem.methodInit = true;
   }
 
   /**
@@ -142,9 +160,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-
-    m_visOdometer.update();
-  }
+    mLimelight.updateTelementry();
+   //mDriveSystem.rotateCam(4, visionTargetInfo.visionPixelX);
+   }
 
   /**
    * 
@@ -153,6 +171,7 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     isEnabled = true;
 
+    
     super.teleopInit();
   }
 
@@ -171,10 +190,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void disabledPeriodic() {
-    mDrivetrain.updateTelemetry();
-    mLimelight.updateTelementry();
-    mIntake.updateTelemetry();
-    mShooter.updateTelemetry();
+    mDriveSystem.updateTelemetry();
+    //mLimelight.updateTelementry();
 
     super.disabledPeriodic();
   }
@@ -185,7 +202,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     mLimelight.updateTelementry();
-  }
+}
 
   /**
    * This function is called periodically during test mode.
