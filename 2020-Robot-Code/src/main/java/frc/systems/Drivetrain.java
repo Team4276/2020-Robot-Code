@@ -12,12 +12,13 @@ import frc.robot.Robot;
 import edu.wpi.first.wpilibj.VictorSP;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.util.Units;
+
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
+
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
@@ -52,7 +53,9 @@ public class Drivetrain {
     private boolean isDeploying = false;
     private Gear currentGear = Gear.HI;
     private boolean brakeModeisEngaged = true;
+
     private final DriveMode DEFAULT_MODE = DriveMode.TANK;
+
     private DriveMode currentMode = DEFAULT_MODE;
     private String currentMode_s = "Arcade";
 
@@ -80,10 +83,12 @@ public class Drivetrain {
     Pose2d pose;
 
     DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(28));
-   // DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(getHeading());
+    DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(getHeading());
     SimpleMotorFeedforward feedforward = new SimpleMotorFeedforward(0, 0, 0);// get from characterization tool
+
     PIDController pidLeft = new PIDController(Constants.kP, Constants.kI, Constants.kD);
     PIDController pidRight = new PIDController(Constants.kP, Constants.kI, Constants.kD);
+
     RamseteController ram = new RamseteController();
 
     public Drivetrain(boolean isCAN, int FLport, int MLport, int BLport, int FRport, int MRport, int BRport,
@@ -99,6 +104,7 @@ public class Drivetrain {
         m_left_encoder = new Encoder(m_left_encoderPortA, m_left_encoderPortB);
         m_right_encoder.reset();
         m_left_encoder.reset();
+
         if (isCAN) {
             hasCANNetwork = true;
 
@@ -182,6 +188,8 @@ public class Drivetrain {
             currentMode_s = "Auto";
         } else if (currentMode == DriveMode.ARCADE) {
             currentMode_s = "Arcade";
+        } else if (currentMode == DriveMode.CHEESY) {
+            currentMode_s = "Cheesy";
         } else {
             currentMode_s = "Tank";
         }
@@ -192,8 +200,7 @@ public class Drivetrain {
         switch (currentMode) {
 
         case AUTO:
-            // rotateCam(4, Robot.visionTargetInfo.visionPixelX);
-            // driveFwd(4, .25);
+
             LimelightRotate();
 
             break;
@@ -308,10 +315,6 @@ public class Drivetrain {
             break;
 
         case TANK:
-
-            // Robot.mLimelight.setCamMode(1);
-            // Robot.mLimelight.setLedMode(1);
-
             resetAuto();
             if (Math.abs(Robot.rightJoystick.getY()) > deadband) {
                 rightY = -Math.pow(Robot.rightJoystick.getY(), 3 / 2);
@@ -450,7 +453,6 @@ public class Drivetrain {
             mrDriveX.setNeutralMode(NeutralMode.Coast);
             brDriveX.setNeutralMode(NeutralMode.Coast);
         }
-
     }
 
     /**
@@ -461,30 +463,25 @@ public class Drivetrain {
      */
 
     public void LimelightRotate() {
-
         Robot.mLimelight.RotateTracking();
         assignMotorPower(-Robot.mLimelight.rightSteering, Robot.mLimelight.leftSteering);
-
     }
 
     public void LimelightDrive() {
-
         Robot.mLimelight.DriveTracking();
         assignMotorPower(Robot.mLimelight.rightSteering, Robot.mLimelight.leftSteering);
-
     }
 
     public void resetAuto() {
         methodInit = true;
         timerNum = 1;
     }
-/*
+
     public Rotation2d getHeading() {
         return Rotation2d.fromDegrees(Robot.m_imu.getGyroAngleZ());
     }
-*/
-    public boolean autoDriveTest(double desiredCoordinate) {
 
+    public boolean autoDriveTest(double desiredCoordinate) {
         return false;
     }
 
@@ -507,7 +504,7 @@ public class Drivetrain {
     public PIDController getPidRight() {
         return pidRight;
     }
-/*
+
     public void updateOdometry() {
         pose = odometry.update(getHeading(), m_left_encoder.getDistance(), m_right_encoder.getDistance());
     }
@@ -517,20 +514,21 @@ public class Drivetrain {
     }
 
     public void runRamsete() {
-
         ChassisSpeeds adjustedSpeeds = ram.calculate(getPose(), Robot.mTraj.getGoal());
         DifferentialDriveWheelSpeeds wheelSpeeds = getKinematics().toWheelSpeeds(adjustedSpeeds);
 
         double left = wheelSpeeds.leftMetersPerSecond;
         double right = wheelSpeeds.rightMetersPerSecond;
 
+        final double leftFeedforward = feedforward.calculate(wheelSpeeds.leftMetersPerSecond);
+        final double rightFeedforward = feedforward.calculate(wheelSpeeds.rightMetersPerSecond);
+
         double rOutput = pidRight.calculate(m_right_encoder.getDistance(), right);
         double lOutput = pidLeft.calculate(m_left_encoder.getDistance(), left);
+
+        assignMotorPower(rOutput + rightFeedforward, lOutput + leftFeedforward);
     }
 
-    /*
-     * () public void reset(){ assignMotorPower(rightPow, leftPow); }
-     */
     /**
      * updates smartdashboard
      */
@@ -548,10 +546,6 @@ public class Drivetrain {
         // power outputs
         SmartDashboard.putNumber("Right Power", rightPower);
         SmartDashboard.putNumber("Left Power", leftPower);
-
-        // Deploy hatch
-        SmartDashboard.putBoolean("Hatch Back Up", isDeploying);
-
         // Check Coast/Brake
         SmartDashboard.putBoolean("Brake Mode", brakeModeisEngaged);
     }
