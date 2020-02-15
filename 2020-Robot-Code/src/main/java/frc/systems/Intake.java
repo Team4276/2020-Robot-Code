@@ -12,18 +12,24 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import frc.robot.Robot;
 import frc.utilities.Xbox;
-import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Robot;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 public class Intake {
     double intakeUpSpeed = 1.0;
     double intakeDownSpeed = -1.0;
     VictorSPX lowerMotor;
     VictorSPX upperMotor;
     TalonSRX pivoteMotor;
-    public Intake (int lowerport, int upperport, int pivoteport) {
+    VictorSPX inBetween;
+    DoubleSolenoid piston;
+    public Intake (int lowerport, int upperport, int pivoteport, int inBetweenPort, int pistonA, int pistonB) {
         lowerMotor = new VictorSPX(lowerport);
         upperMotor = new VictorSPX(upperport);
         pivoteMotor = new TalonSRX(pivoteport);
+        inBetween = new VictorSPX(inBetweenPort);
+        piston = new DoubleSolenoid(pistonA, pistonB);
     }
     public void performMainProcessing(){
     if (Robot.xboxJoystick.getRawButton(Xbox.RB)){
@@ -49,10 +55,13 @@ public class Intake {
     public void intake(){
         lowerMotor.set(ControlMode.PercentOutput, intakeDownSpeed);
         upperMotor.set(ControlMode.PercentOutput, intakeUpSpeed);
+        piston.set(Value.kForward);
     }
     public void outtake(){
         lowerMotor.set(ControlMode.PercentOutput, intakeUpSpeed);
         upperMotor.set(ControlMode.PercentOutput, intakeDownSpeed);
+        piston.set(Value.kReverse);
+        inBetween.set(ControlMode.PercentOutput, -0.7);
     }
     public void stop(){
         lowerMotor.set(ControlMode.PercentOutput, 0);

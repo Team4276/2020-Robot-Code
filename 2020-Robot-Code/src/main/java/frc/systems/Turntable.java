@@ -23,6 +23,7 @@ public class Turntable {
     DoubleSolenoid flipper;
     Toggler fliptog;
 
+
     public Turntable(int turnport, int flipport, int fliptport) {
         codyMotor = new VictorSPX(turnport);
         flipper = new DoubleSolenoid(flipport, fliptport);

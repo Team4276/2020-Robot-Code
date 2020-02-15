@@ -27,6 +27,8 @@ public class RoboRioPorts {
 
 	public static final int CAN_TURNTABLE_TURN = 22;
 
+	public static final int CAN_BALL_TRANSFER = 23;
+
 	// *** PNUEMATICS ***
 	// Example:
 	// static final int DRIVE_DOUBLE_SOLENOID_FWD = 0;
@@ -36,6 +38,9 @@ public class RoboRioPorts {
 
 	public static final int CODY_PISTON_FWD = 2;
 	public static final int CODY_PISTON_REV = 3;
+
+	public static final int TRANSFER_PISTON_FWD = 4;
+	public static final int TRANSER_PISTON_REV = 5;
 
 	// *** DIO ***
 	// Example:
