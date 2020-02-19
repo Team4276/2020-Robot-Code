@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import com.analog.adis16448.frc.ADIS16448_IMU;
 
 import frc.systems.sensors.Cameras;
@@ -28,6 +29,7 @@ import frc.systems.Shooter;
 import frc.systems.Turntable;
 
 import frc.auton.PathTrajectory;
+import frc.auton.SelectAuto;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -37,6 +39,13 @@ import frc.auton.PathTrajectory;
  * project.
  */
 public class Robot extends TimedRobot {
+  Timer defaultTimer;
+  public SelectAuto AutoSelecter;
+  private static final String kDefaultAuto = "Default";
+  private static final String kstraightShoot = "Lined Up Straight";
+  private String m_autoSelected;
+  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
   public static Joystick leftJoystick;
   public static Joystick rightJoystick;
   public static Joystick xboxJoystick;
@@ -78,6 +87,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    AutoSelecter = new SelectAuto();
+    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
+    m_chooser.addOption("My Auto", kstraightShoot);
+    SmartDashboard.putData("Auto choices", m_chooser);
+
     systemTimer = new Timer();
     mLimelight = new Limelight();
     // m_ColorSen = new ColorSen(i2cPort);
@@ -142,9 +156,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    m_autoSelected = m_chooser.getSelected();
+    m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+    System.out.println("Auto selected: " + m_autoSelected);
 
     robotCameraSystem.mainCamera.setExposureHoldCurrent();
     mDriveSystem.methodInit = true;
+
   }
 
   /**
@@ -152,8 +170,20 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
+    switch (m_autoSelected) {
+    case kstraightShoot:
+      AutoSelecter.setMode("StraightShoot");
+      AutoSelecter.selectRoutine();
+      break;
+    case kDefaultAuto:
+    default:
+      // Put default auto code here
+      mDriveSystem.assignMotorPower(0.5, -0.5);
+      defaultTimer.delay(3);
+      mDriveSystem.assignMotorPower(0, 0);
+      break;
+    }
     mLimelight.updateTelementry();
-    // mDriveSystem.rotateCam(4, visionTargetInfo.visionPixelX);
   }
 
   /**

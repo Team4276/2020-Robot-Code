@@ -462,8 +462,17 @@ public class Drivetrain {
      * @return status of action (complete)
      */
 
+    /**
+     * Limelight methods
+     */
+
     public void LimelightRotate() {
         Robot.mLimelight.RotateTracking();
+        assignMotorPower(-Robot.mLimelight.rightSteering, Robot.mLimelight.leftSteering);
+    }
+
+    public void LimelightFindTarget() {
+        Robot.mLimelight.seeking();
         assignMotorPower(-Robot.mLimelight.rightSteering, Robot.mLimelight.leftSteering);
     }
 
@@ -471,6 +480,10 @@ public class Drivetrain {
         Robot.mLimelight.DriveTracking();
         assignMotorPower(Robot.mLimelight.rightSteering, Robot.mLimelight.leftSteering);
     }
+
+    /**
+     * Ramsete/Path Generator methods
+     */
 
     public void resetAuto() {
         methodInit = true;
