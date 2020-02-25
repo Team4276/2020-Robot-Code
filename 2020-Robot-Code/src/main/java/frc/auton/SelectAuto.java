@@ -16,7 +16,7 @@ import frc.utilities.SoftwareTimer;
 
 public class SelectAuto {
     SoftwareTimer delay;
-    Drivetrain Drive = Robot.mDriveSystem;
+    Drivetrain Drive = Robot.mDrivetrain;
     Shooter shot = Robot.mShooter;
     Intake inta = Robot.mIntake;
     Limelight lime = Robot.mLimelight;

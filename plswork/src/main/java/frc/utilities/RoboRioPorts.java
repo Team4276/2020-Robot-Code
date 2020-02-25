@@ -25,9 +25,9 @@ public class RoboRioPorts {
 	public static final int CAN_SHOOTER_SHOOTB = 20;
 	public static final int CAN_SHOOTER_FLY = 21;
 
-	public static final int CAN_TURNTABLE_TURN = 22;
+	//public static final int CAN_TURNTABLE_TURN = 22;
 
-	public static final int CAN_BALL_TRANSFER = 23;
+	public static final int CAN_BALL_TRANSFER = 22;
 
 	// *** PNUEMATICS ***
 	// Example:

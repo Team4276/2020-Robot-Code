@@ -25,11 +25,14 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import edu.wpi.first.wpilibj.Timer;
+
 public class Shooter {
     CANSparkMax sideShootA;
     CANSparkMax sideShootB;
     TalonSRX flyWheel;
     VictorSPX inBetween;
+    Timer delayer;
 
     DoubleSolenoid transferPiston;
 
@@ -85,13 +88,19 @@ public class Shooter {
     public void performMainProcessing() {
         if (Robot.xboxJoystick.getRawAxis(Xbox.RT) > 0.2) {
             shoot();
+            //delayer.delay(1);
+            
             ballTransfer();
+            //Robot.mIntake.intake();
 /*
             if (CurrentRPMA > desiredRPM - 200 && CurrentRPMA < desiredRPM + 200) {
                 ballTransfer();
             }*/
 
-        } else {
+        } else if (Robot.xboxJoystick.getRawButton(Xbox.LB)) {
+            outtake();
+        }
+            else{
             stop();
         }
     }
@@ -104,14 +113,14 @@ public class Shooter {
         } else {
             sideShootA.set(-1.0);
             sideShootB.set(1.0);
-            flyWheel.set(ControlMode.PercentOutput, 1.0);
+            flyWheel.set(ControlMode.PercentOutput, -1.0);
         }
     }
 
     public void outtake() {
         sideShootA.set(1.0);
         sideShootB.set(-1.0);
-        flyWheel.set(ControlMode.PercentOutput, -1.0);
+        flyWheel.set(ControlMode.PercentOutput, 1.0);
         // transferPiston.set(Value.kReverse);
         // inBetween.set(ControlMode.PercentOutput, -0.7);
     }
@@ -125,7 +134,7 @@ public class Shooter {
 
     public void ballTransfer() {
         transferPiston.set(Value.kReverse);
-        inBetween.set(ControlMode.PercentOutput, 0.7);
+        inBetween.set(ControlMode.PercentOutput, -0.7);
 
     }
 

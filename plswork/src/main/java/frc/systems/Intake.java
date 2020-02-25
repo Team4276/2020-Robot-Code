@@ -21,30 +21,33 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Intake {
-    double intakeUpSpeed = 1.0;
+    double intakeUpSpeed = 0.5;
     double intakeDownSpeed = -1.0;
 
-    //VictorSPX lowerMotor;
+    double outtakeUpSpeed = -0.6;
+
+    VictorSPX lowerMotor;
     VictorSPX upperMotor;
     TalonSRX pivoteMotor;
 
     Shooter shoot = Robot.mShooter;
 
-    public Intake(int upperport, int pivoteport, int inBetweenPort, int pistonA, int pistonB) {
-        //lowerMotor = new VictorSPX(lowerport);
+    public Intake(int upperport, int lowerport ){//int pivoteport, int inBetweenPort, int pistonA, int pistonB) {
+        lowerMotor = new VictorSPX(lowerport);
         upperMotor = new VictorSPX(upperport);
-        pivoteMotor = new TalonSRX(pivoteport);
+       // pivoteMotor = new TalonSRX(pivoteport);
     }
 
     public void performMainProcessing() {
         if (Robot.xboxJoystick.getRawButton(Xbox.RB)) {
             intake();
-        } else if (Robot.xboxJoystick.getRawButton(Xbox.LB)) {
+        } else if(Robot.xboxJoystick.getRawButton(Xbox.LB)){
             outtake();
-        } else {
+        }
+         else {
             stop();
         }
-
+/*
         if (Robot.xboxJoystick.getRawAxis(Xbox.RAxisY) > 0.1) {
             pivoteup();
         } else if (Robot.xboxJoystick.getRawAxis(Xbox.RAxisY) < -0.1) {
@@ -52,21 +55,22 @@ public class Intake {
         } else {
             pivoteMotor.set(ControlMode.PercentOutput, 0);
         }
-
+*/
     }
 
     public void intake() {
         //lowerMotor.set(ControlMode.PercentOutput, intakeDownSpeed);
         upperMotor.set(ControlMode.PercentOutput, intakeUpSpeed);
-        shoot.transferPiston.set(Value.kForward);
+        //Robot.mShooter.ballTransfer();
+       // shoot.transferPiston.set(Value.kForward);
     }
 
     public void outtake() {
-        //lowerMotor.set(ControlMode.PercentOutput, intakeUpSpeed);
-        upperMotor.set(ControlMode.PercentOutput, intakeDownSpeed);
-        shoot.transferPiston.set(Value.kReverse);
-        shoot.inBetween.set(ControlMode.PercentOutput, -0.7);
-        shoot.outtake();
+        lowerMotor.set(ControlMode.PercentOutput, 0.6);
+        upperMotor.set(ControlMode.PercentOutput, outtakeUpSpeed);
+        //shoot.transferPiston.set(Value.kReverse);
+        //shoot.inBetween.set(ControlMode.PercentOutput, -0.7);
+        //shoot.outtake();
     }
 
     public void stop() {
