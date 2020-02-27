@@ -111,8 +111,8 @@ public class Shooter {
             pidB.setReference(desiredRPM, ControlType.kPosition);
             flyWheel.set(ControlMode.PercentOutput, 1.0);
         } else {
-            sideShootA.set(-1.0);
-            sideShootB.set(1.0);
+            sideShootA.set(-0.75);
+            sideShootB.set(0.75);
             flyWheel.set(ControlMode.PercentOutput, -1.0);
         }
     }
@@ -134,7 +134,7 @@ public class Shooter {
 
     public void ballTransfer() {
         transferPiston.set(Value.kReverse);
-        inBetween.set(ControlMode.PercentOutput, -0.7);
+        inBetween.set(ControlMode.PercentOutput, -0.6);
 
     }
 
