@@ -9,6 +9,7 @@ package frc.systems.sensors;
 
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Robot;
 
 public class Limelight {
 
@@ -19,7 +20,7 @@ public class Limelight {
   double distance = 0.0;
 
   // steering commands
-  final double Kp = -0.05;
+  double Kp = -0.05;
   final double minSteer = 0.05;
   // driving commands
   final double DRIVE_K = 0.26;
@@ -96,7 +97,15 @@ public class Limelight {
   }
 
   public void DriveTracking() {
-
+   // float KpDistance = -0.1f;  // Proportional control constant for distance
+    //float current_distance = Estimate_Distance();  // see the 'Case Study: Estimating Distance'
+    
+   
+    double drive_cmd = (DESIRED_TARGET_AREA - ta) * DRIVE_K;
+    
+            rightSteering += drive_cmd;
+            leftSteering += drive_cmd;
+    
   }
 
   public void setLedMode(int mode) {
@@ -123,7 +132,17 @@ public class Limelight {
     return tx;
   }
 
+  private void tunePID(){
+		if (Robot.leftJoystick.getRawButton(7) == true) {
+			Kp = Kp + 10e-3;
+		}
+		if (Robot.leftJoystick.getRawButton(8) == true) {
+			Kp = Kp - 10e-3;
+    }
+  }
+
   public void updateTelementry() {
+    tunePID();
     tv = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tv").getDouble(0);
     tx = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
     ty = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);

@@ -96,15 +96,8 @@ public class ArmPivot extends Thread implements Runnable {
 
 	public void performMainProcessing() {
 		computeManualPower();
-
-		manualOverrideIsEngaged = manualOverrideTogglerPivot.getMechanismState();
-
-		manualOverrideTogglerPivot.updateMechanismState();
-		if (manualOverrideIsEngaged) {
 			commandedPower = manualPower;
-		} else {
-			commandedPower = staticPower + activePower;
-		}
+		
 		limitCommandedPower();
 		pivoter1.set(ControlMode.PercentOutput, -commandedPower);
 	}

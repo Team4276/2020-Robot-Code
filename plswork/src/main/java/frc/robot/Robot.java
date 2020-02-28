@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import com.analog.adis16448.frc.ADIS16448_IMU;
 
 import frc.systems.sensors.Cameras;
@@ -22,6 +23,7 @@ import frc.systems.sensors.VisualOdometer;
 import frc.systems.sensors.Limelight;
 
 import frc.utilities.RoboRioPorts;
+import frc.utilities.SoftwareTimer;
 
 import frc.systems.Drivetrain;
 import frc.systems.Intake;
@@ -29,6 +31,7 @@ import frc.systems.Shooter;
 import frc.systems.Turntable;
 import frc.systems.ArmPivot;
 
+import frc.auton.SelectAuto;
 
 
 /**
@@ -39,6 +42,13 @@ import frc.systems.ArmPivot;
  * project.
  */
 public class Robot extends TimedRobot {
+      SoftwareTimer defaultTimer;
+  public SelectAuto AutoSelecter;
+  private static final String kDefaultAuto = "Default";
+  private static final String kstraightShoot = "Lined Up Straight";
+  private String m_autoSelected;
+  private final SendableChooser<String> m_chooser = new SendableChooser<>();
+    
   public static Joystick leftJoystick;
   public static Joystick rightJoystick;
   public static Joystick xboxJoystick;
@@ -53,7 +63,7 @@ public class Robot extends TimedRobot {
    * 
    * 
    */
-
+  Notifier lime;
    Notifier armGroup;
    public static ArmPivot mArmPivot;
 
@@ -70,8 +80,16 @@ public class Robot extends TimedRobot {
   public static Turntable mTurntable;
 
   private final I2C.Port i2cPort = I2C.Port.kOnboard;
+  
   @Override
   public void robotInit() {
+          AutoSelecter = new SelectAuto();
+    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
+    m_chooser.addOption("My Auto", kstraightShoot);
+    SmartDashboard.putData("Auto choices", m_chooser);
+
+    systemTimer = new Timer();
+    mLimelight = new Limelight();
     systemTimer = new Timer();
 
     leftJoystick = new Joystick(0);
@@ -93,18 +111,19 @@ public class Robot extends TimedRobot {
         RoboRioPorts.DRIVE_DOUBLE_SOLENOID_FWD, RoboRioPorts.DRIVE_DOUBLE_SOLENOID_REV, RoboRioPorts.DIO_DRIVE_RIGHT_A,
         RoboRioPorts.DIO_DRIVE_RIGHT_B, RoboRioPorts.DIO_DRIVE_LEFT_A, RoboRioPorts.DIO_DRIVE_LEFT_B);
 
-    mIntake = new Intake(RoboRioPorts.CAN_INTAKE_UP, RoboRioPorts.CAN_BALL_TRANSFER);// RoboRioPorts.CAN_INTAKE_PIV
-       //);// RoboRioPorts.CAN_BALL_TRANSFER, RoboRioPorts.TRANSER_PISTON_REV, RoboRioPorts.TRANSFER_PISTON_FWD);
-
+    mIntake = new Intake(RoboRioPorts.CAN_INTAKE_UP, RoboRioPorts.CAN_BALL_TRANSFER);
     mShooter = new Shooter(RoboRioPorts.CAN_SHOOTER_SHOOTA, RoboRioPorts.CAN_SHOOTER_SHOOTB,
         RoboRioPorts.CAN_SHOOTER_FLY, RoboRioPorts.TRANSER_PISTON_REV, RoboRioPorts.TRANSFER_PISTON_FWD,
         RoboRioPorts.CAN_BALL_TRANSFER);
 
     mArmPivot = new ArmPivot(RoboRioPorts.CAN_INTAKE_PIV);
+
+    
 /*
     mTurntable = new Turntable(RoboRioPorts.CAN_TURNTABLE_TURN, RoboRioPorts.CODY_PISTON_FWD,
         RoboRioPorts.CODY_PISTON_REV);
 */
+lime = new Notifier(mLimelight::updateTelementry);
     driveRateGroup = new Notifier(mDrivetrain::operatorDrive);
     intakeRateGroup = new Notifier(mIntake::performMainProcessing);
     shooterRateGroup = new Notifier(mShooter::performMainProcessing);
@@ -115,23 +134,46 @@ public class Robot extends TimedRobot {
     intakeRateGroup.startPeriodic(0.1);
     shooterRateGroup.startPeriodic(0.1);
     armGroup.startPeriodic(0.1);
+    lime.startPeriodic(0.1);
     //turntableRateGroup.startPeriodic(0.1);
   }
 
   @Override
   public void autonomousInit() {
+      m_autoSelected = m_chooser.getSelected();
+    m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
+    System.out.println("Auto selected: " + m_autoSelected);
   }
 
   @Override
   public void autonomousPeriodic() {
+      switch (m_autoSelected) {
+    case kstraightShoot:
+      AutoSelecter.setMode("StraightShoot");
+      AutoSelecter.selectRoutine();
+      break;
+    case kDefaultAuto:
+    default:
+      // Put default auto code here
+      mDrivetrain.assignMotorPower(0.5, -0.5);
+      defaultTimer.setTimer(10);
+      defaultTimer.isExpired();
+      //defaultTimer.delay(3);
+     // mDrivetrain.assignMotorPower(0, 0);
+      break;
+    }
   }
 
   @Override
   public void teleopInit() {
+    mDrivetrain.updateTelemetry();
+    mShooter.updateTelemetry();
+    
   }
 
   @Override
   public void teleopPeriodic() {
+    mShooter.updateTelemetry();
   }
 
   @Override
@@ -141,5 +183,6 @@ public class Robot extends TimedRobot {
   @Override
   public void testPeriodic() {
   }
+  
 
 }
