@@ -22,7 +22,7 @@ public class SelectAuto {
     Limelight lime = Robot.mLimelight;
 
     public enum AutoMode {
-        StraightShoot, MiddleShoot, SideShoot
+        DriveOffLine, StraightShoot, MiddleShoot, SideShoot, DoNothing;
     }
 
     public AutoMode currentSelection = AutoMode.StraightShoot;
@@ -34,7 +34,13 @@ public class SelectAuto {
 
     public void selectRoutine() {
         switch (currentSelection) {
-
+        case DoNothing:
+            Drive.assignMotorPower(0, 0);
+        break;
+        case DriveOffLine:
+            Drive.assignMotorPower(0.5, -0.5);
+            delay.setTimer(3);
+            break;
         // basic command to find goal and shoot if lined up with it
         case StraightShoot:
 
@@ -73,6 +79,10 @@ public class SelectAuto {
             currentSelection = AutoMode.MiddleShoot;
         } else if (select.equals("SideShoot")) {
             currentSelection = AutoMode.SideShoot;
+        } else if (select.equals("DriveOffLine")) {
+            currentSelection = AutoMode.StraightShoot;
+        } else {
+            currentSelection = AutoMode.DoNothing;
         }
     }
 

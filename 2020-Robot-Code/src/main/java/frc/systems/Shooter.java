@@ -25,11 +25,14 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import edu.wpi.first.wpilibj.Timer;
+
 public class Shooter {
     CANSparkMax sideShootA;
     CANSparkMax sideShootB;
     TalonSRX flyWheel;
     VictorSPX inBetween;
+    Timer delayer;
 
     DoubleSolenoid transferPiston;
 
@@ -39,12 +42,19 @@ public class Shooter {
     CANPIDController pidA, pidB;
 
     double kP, kI, kD, kIz, kFF, kMax, kMin;
-    boolean usePID = false; // set to false if pid is not working properly
+    public double shooterP = 0.000027;
+    public double shooterI = 0;
+    public double shooterD = 3;
+    public double shooterF = 0.00019;
+    boolean usePID = true; // set to false if pid is not working properly
 
-    final double desiredRPM = 1000;
+    double desiredRPM = 5000;
+    final double desiredRPMA = -1*desiredRPM;
 
-    //double CurrentRPMA = encoderSideA.getPosition();
-    //double CurrentRPMB = encoderSideB.getPosition();
+    double CurrentRPMA;// = encoderSideA.getPosition();
+    double CurrentRPMB;// = encoderSideB.getPosition();
+    
+    boolean isShooting = false;
 
     public Shooter(int shootportA, int shootSideB, int flyport, int pistonA, int pistonB, int inBetweenPort) {
         sideShootA = new CANSparkMax(shootportA, MotorType.kBrushless);
@@ -56,82 +66,137 @@ public class Shooter {
 
         encoderSideA = sideShootA.getEncoder();
         encoderSideB = sideShootB.getEncoder();
-
+        
+        
         pidA = sideShootA.getPIDController();
         pidB = sideShootB.getPIDController();
 
+        pidA.setFeedbackDevice(encoderSideA);
+        pidB.setFeedbackDevice(encoderSideB);
+
+        
+
         // pid constants
-        kP = .1;
-        kI = 1e-4;
-        kD = 1;
+        kP = .001;
+        kI = 0;
+        kD = 0;
         kIz = 0;
         kFF = 0;
         kMax = 1;
         kMin = -1;
-        pidA.setP(kP);
-        pidA.setI(kI);
-        pidA.setD(kD);
-        pidA.setIZone(kIz);
-        pidA.setFF(kFF);
+        pidA.setP(shooterP);
+        pidA.setI(shooterI);
+        pidA.setD(shooterD);
+       // pidA.setIZone(kIz);
+        pidA.setFF(shooterF);
         pidA.setOutputRange(kMin, kMax);
-        pidB.setP(kP);
-        pidB.setI(kI);
-        pidB.setD(kD);
+        pidB.setP(shooterP);
+        pidB.setI(shooterI);
+        pidB.setD(shooterD);
         pidB.setIZone(kIz);
-        pidB.setFF(kFF);
+        pidB.setFF(shooterF);
         pidB.setOutputRange(kMin, kMax);
     }
 
     public void performMainProcessing() {
         if (Robot.xboxJoystick.getRawAxis(Xbox.RT) > 0.2) {
             shoot();
+            if(isShooting == false){
+            delayer.delay(1);
+            }
             ballTransfer();
+            isShooting = true;
+            //Robot.mIntake.intake();
 /*
             if (CurrentRPMA > desiredRPM - 200 && CurrentRPMA < desiredRPM + 200) {
                 ballTransfer();
             }*/
 
-        } else {
+        }
+        else{
             stop();
         }
+        tunePID();
+        updateTelemetry();
     }
 
     public void shoot() {
         if (usePID) {
-            pidA.setReference(desiredRPM, ControlType.kPosition);
-            pidB.setReference(desiredRPM, ControlType.kPosition);
-            flyWheel.set(ControlMode.PercentOutput, 1.0);
+            
+            pidA.setReference(desiredRPMA, ControlType.kVelocity);
+            pidB.setReference(desiredRPM, ControlType.kVelocity);
+            
         } else {
-            sideShootA.set(-1.0);
-            sideShootB.set(1.0);
-            flyWheel.set(ControlMode.PercentOutput, 1.0);
+            sideShootA.set(-0.5);
+            sideShootB.set(0.5);
+            //flyWheel.set(ControlMode.PercentOutput, -1.0);
         }
     }
 
     public void outtake() {
         sideShootA.set(1.0);
         sideShootB.set(-1.0);
-        flyWheel.set(ControlMode.PercentOutput, -1.0);
+        flyWheel.set(ControlMode.PercentOutput, 1.0);
         // transferPiston.set(Value.kReverse);
         // inBetween.set(ControlMode.PercentOutput, -0.7);
     }
 
     public void stop() {
-        sideShootA.set(0);
-        sideShootB.set(0);
+        //sideShootA.set(0);
+        //sideShootB.set(0);
+        pidA.setReference(0, ControlType.kDutyCycle);
+        pidB.setReference(0, ControlType.kDutyCycle);
         flyWheel.set(ControlMode.PercentOutput, 0);
         inBetween.set(ControlMode.PercentOutput, 0);
+        isShooting = false;
     }
 
     public void ballTransfer() {
+        flyWheel.set(ControlMode.PercentOutput, -1.0);
         transferPiston.set(Value.kReverse);
-        inBetween.set(ControlMode.PercentOutput, 0.7);
-
+        inBetween.set(ControlMode.PercentOutput, -0.6);
     }
 
+    public void getEncoder(){
+        CurrentRPMA = encoderSideA.getPosition();
+    }
+
+    public void setRPM(double RPM){
+        desiredRPM = RPM;
+    }
+
+    public double getRPM(){
+        return desiredRPM;
+    }
+    
+private void tunePID(){
+		if (Robot.leftJoystick.getRawButton(7) == true) {
+			shooterP = shooterP + 10e-5;
+		}
+		if (Robot.leftJoystick.getRawButton(8) == true) {
+			shooterP = shooterP - 10e-5;
+		}
+		if (Robot.leftJoystick.getRawButton(9) == true) {
+			shooterI = shooterI + 1e-3;
+		}
+		if (Robot.leftJoystick.getRawButton(10) == true) {
+			shooterI = shooterI - 1e-3;
+		}
+		if (Robot.leftJoystick.getRawButton(11) == true) {
+			shooterD = shooterD + 1e-3;
+		}
+		if (Robot.leftJoystick.getRawButton(12) == true) {
+			shooterD = shooterD - 1e-3;
+		}
+	//	SmartDashboard.putNumber("Elevator Lower Kstatic",STATIC_GAIN_LOW);
+		SmartDashboard.putNumber("Elevator Lower Kp*1e-3", shooterP );
+		SmartDashboard.putNumber("Elevator Lower Ki*1e-3", shooterI );
+		SmartDashboard.putNumber("Elevator Lower Kd*1e-3", shooterD );
+}
+
     public void updateTelemetry() {
-        SmartDashboard.putNumber("side A encoder", encoderSideA.getPosition());
-        SmartDashboard.putNumber("side B encoder", encoderSideB.getPosition());
+        SmartDashboard.putNumber("side A encoder", encoderSideA.getVelocity());
+        SmartDashboard.putNumber("side B encoder", encoderSideB.getVelocity());
         SmartDashboard.putNumber("Side A shooter", flyWheel.getSensorCollection().getQuadraturePosition());
 
         SmartDashboard.putNumber("P Gain", kP);

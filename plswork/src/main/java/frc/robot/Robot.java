@@ -30,9 +30,9 @@ import frc.systems.Intake;
 import frc.systems.Shooter;
 import frc.systems.Turntable;
 import frc.systems.ArmPivot;
+import frc.systems.Climber;
 
 import frc.auton.SelectAuto;
-
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -42,13 +42,15 @@ import frc.auton.SelectAuto;
  * project.
  */
 public class Robot extends TimedRobot {
-      SoftwareTimer defaultTimer;
+  SoftwareTimer defaultTimer;
+  Cameras robotCameraSystem;
   public SelectAuto AutoSelecter;
   private static final String kDefaultAuto = "Default";
   private static final String kstraightShoot = "Lined Up Straight";
+  private static final String kDriveOffLine = "Drive off the line";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
-    
+
   public static Joystick leftJoystick;
   public static Joystick rightJoystick;
   public static Joystick xboxJoystick;
@@ -64,8 +66,8 @@ public class Robot extends TimedRobot {
    * 
    */
   Notifier lime;
-   Notifier armGroup;
-   public static ArmPivot mArmPivot;
+  Notifier armGroup;
+  public static ArmPivot mArmPivot;
 
   Notifier driveRateGroup;
   public static Drivetrain mDrivetrain;
@@ -79,13 +81,17 @@ public class Robot extends TimedRobot {
   Notifier turntableRateGroup;
   public static Turntable mTurntable;
 
+  Notifier climberRateGroup;
+  public static Climber mClimber;
+
   private final I2C.Port i2cPort = I2C.Port.kOnboard;
-  
+
   @Override
   public void robotInit() {
-          AutoSelecter = new SelectAuto();
+    AutoSelecter = new SelectAuto();
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kstraightShoot);
+    m_chooser.addOption("Shoot Straight", kstraightShoot);
+    m_chooser.addOption("Drive Off Line", kDriveOffLine);
     SmartDashboard.putData("Auto choices", m_chooser);
 
     systemTimer = new Timer();
@@ -100,7 +106,7 @@ public class Robot extends TimedRobot {
     mLimelight = new Limelight();
     // m_ColorSen = new ColorSen(i2cPort);
 
-    //robotCameraSystem = new Cameras();
+    robotCameraSystem = new Cameras();
 
     leftJoystick = new Joystick(0);
     rightJoystick = new Joystick(1);
@@ -118,62 +124,89 @@ public class Robot extends TimedRobot {
 
     mArmPivot = new ArmPivot(RoboRioPorts.CAN_INTAKE_PIV);
 
-    
-/*
-    mTurntable = new Turntable(RoboRioPorts.CAN_TURNTABLE_TURN, RoboRioPorts.CODY_PISTON_FWD,
-        RoboRioPorts.CODY_PISTON_REV);
-*/
-lime = new Notifier(mLimelight::updateTelementry);
+    mClimber = new Climber(RoboRioPorts.CAN_CLIMBER_DUBSOLA, RoboRioPorts.CAN_CLIMBER_DUBSOLB);
+
+    /*
+     * mTurntable = new Turntable(RoboRioPorts.CAN_TURNTABLE_TURN,
+     * RoboRioPorts.CODY_PISTON_FWD, RoboRioPorts.CODY_PISTON_REV);
+     */
+    lime = new Notifier(mLimelight::updateTelementry);
     driveRateGroup = new Notifier(mDrivetrain::operatorDrive);
     intakeRateGroup = new Notifier(mIntake::performMainProcessing);
     shooterRateGroup = new Notifier(mShooter::performMainProcessing);
     armGroup = new Notifier(mArmPivot::performMainProcessing);
-    //turntableRateGroup = new Notifier(mTurntable::performMainProcessing);
+    climberRateGroup = new Notifier(mClimber::performMainProcessing);
+    // turntableRateGroup = new Notifier(mTurntable::performMainProcessing);
 
     driveRateGroup.startPeriodic(0.05);
     intakeRateGroup.startPeriodic(0.1);
     shooterRateGroup.startPeriodic(0.1);
     armGroup.startPeriodic(0.1);
     lime.startPeriodic(0.1);
-    //turntableRateGroup.startPeriodic(0.1);
+    climberRateGroup.startPeriodic(0.1);
+    // turntableRateGroup.startPeriodic(0.1);
+  }
+
+  @Override
+  public void robotPeriodic() {
+    mLimelight.updateTelementry();
+    mDrivetrain.updateTelemetry();
+    mShooter.updateTelemetry();
   }
 
   @Override
   public void autonomousInit() {
-      m_autoSelected = m_chooser.getSelected();
+    m_autoSelected = m_chooser.getSelected();
     m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
     System.out.println("Auto selected: " + m_autoSelected);
   }
 
   @Override
   public void autonomousPeriodic() {
-      switch (m_autoSelected) {
+    switch (m_autoSelected) {
     case kstraightShoot:
       AutoSelecter.setMode("StraightShoot");
+      AutoSelecter.selectRoutine();
+      break;
+    case kDriveOffLine:
+      AutoSelecter.setMode("DriveOffLine");
       AutoSelecter.selectRoutine();
       break;
     case kDefaultAuto:
     default:
       // Put default auto code here
-      mDrivetrain.assignMotorPower(0.5, -0.5);
-      defaultTimer.setTimer(10);
-      defaultTimer.isExpired();
-      //defaultTimer.delay(3);
-     // mDrivetrain.assignMotorPower(0, 0);
+      mDrivetrain.assignMotorPower(0.0, 0.0);
       break;
     }
   }
 
   @Override
   public void teleopInit() {
-    mDrivetrain.updateTelemetry();
-    mShooter.updateTelemetry();
-    
+
+    isEnabled = true;
+
+    super.teleopInit();
   }
 
   @Override
   public void teleopPeriodic() {
+    // mShooter.updateTelemetry();
+  }
+
+  @Override
+  public void disabledInit() {
+    isEnabled = false;
+
+    super.disabledInit();
+  }
+
+  @Override
+  public void disabledPeriodic() {
+    mDrivetrain.updateTelemetry();
     mShooter.updateTelemetry();
+    mLimelight.updateTelementry();
+
+    super.disabledPeriodic();
   }
 
   @Override
@@ -183,6 +216,5 @@ lime = new Notifier(mLimelight::updateTelementry);
   @Override
   public void testPeriodic() {
   }
-  
 
 }

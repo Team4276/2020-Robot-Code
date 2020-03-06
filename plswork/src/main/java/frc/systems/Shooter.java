@@ -48,7 +48,7 @@ public class Shooter {
     public double shooterF = 0.00019;
     boolean usePID = true; // set to false if pid is not working properly
 
-    final double desiredRPM = 3000;
+    double desiredRPM = 5000;
     final double desiredRPMA = -1*desiredRPM;
 
     double CurrentRPMA;// = encoderSideA.getPosition();
@@ -117,6 +117,7 @@ public class Shooter {
             stop();
         }
         tunePID();
+        updateTelemetry();
     }
 
     public void shoot() {
@@ -151,13 +152,21 @@ public class Shooter {
     }
 
     public void ballTransfer() {
-        flyWheel.set(ControlMode.PercentOutput, 1.0);
+        flyWheel.set(ControlMode.PercentOutput, -1.0);
         transferPiston.set(Value.kReverse);
         inBetween.set(ControlMode.PercentOutput, -0.6);
     }
 
     public void getEncoder(){
         CurrentRPMA = encoderSideA.getPosition();
+    }
+
+    public void setRPM(double RPM){
+        desiredRPM = RPM;
+    }
+
+    public double getRPM(){
+        return desiredRPM;
     }
     
 private void tunePID(){

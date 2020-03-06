@@ -22,8 +22,9 @@ public class Limelight {
   // steering commands
   double Kp = -0.05;
   final double minSteer = 0.05;
+
   // driving commands
-  final double DRIVE_K = 0.26;
+  double DRIVE_K = 0.26;
   final double DESIRED_TARGET_AREA = 13.0;
   final double MAX_DRIVE = 0.7;
 
@@ -31,7 +32,7 @@ public class Limelight {
   public double tx = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
   public double ty = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
   public double ta = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ta").getDouble(0);
-  public double ts = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ts").getDouble(0);
+  public double ts = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ts").getDouble(-90);
 
   public Limelight() {
     NetworkTableInstance.getDefault().getTable("limelight").getEntry("ledMode").setNumber(1);
@@ -97,9 +98,6 @@ public class Limelight {
   }
 
   public void DriveTracking() {
-   // float KpDistance = -0.1f;  // Proportional control constant for distance
-    //float current_distance = Estimate_Distance();  // see the 'Case Study: Estimating Distance'
-    
    
     double drive_cmd = (DESIRED_TARGET_AREA - ta) * DRIVE_K;
     
@@ -121,6 +119,8 @@ public class Limelight {
   }
 
   public double getDistance() {
+
+    distance = (DESIRED_TARGET_AREA - ta);
     return distance;
   }
 
@@ -138,6 +138,12 @@ public class Limelight {
 		}
 		if (Robot.leftJoystick.getRawButton(8) == true) {
 			Kp = Kp - 10e-3;
+    }
+    if (Robot.leftJoystick.getRawButton(9) == true) {
+			DRIVE_K = DRIVE_K + 10e-3;
+		}
+		if (Robot.leftJoystick.getRawButton(10) == true) {
+			DRIVE_K = DRIVE_K - 10e-3;
     }
   }
 
