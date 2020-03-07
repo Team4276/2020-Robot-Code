@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Intake {
-    double intakeUpSpeed = 0.65;
+    double intakeUpSpeed = 0.85;
     double intakeDownSpeed = -1.0;
 
     double outtakeUpSpeed = -0.75;

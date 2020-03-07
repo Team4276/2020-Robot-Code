@@ -20,8 +20,15 @@ public class Limelight {
   double distance = 0.0;
 
   // steering commands
-  double Kp = -0.05;
-  final double minSteer = 0.05;
+  double Kp = 0.03;
+  double kI = 0.03;
+
+  double errorI = 0;
+  double timeStep = 0;
+  final double minSteer = 0.00005;
+
+  double steerCmd;
+  
 
   // driving commands
   double DRIVE_K = 0.26;
@@ -39,71 +46,54 @@ public class Limelight {
     NetworkTableInstance.getDefault().getTable("limelight").getEntry("camMode").setNumber(1);
   }
 
-  public void seeking() {
-    setLedMode(3);
-
-    setCamMode(0);
-
-    if (tv < 1.0) {
-      LimelightHasValidTarget = false;
-      rightSteering = 0.5;
-      leftSteering = 0.5;
-      return;
-    }
-
-    LimelightHasValidTarget = true;
-
-    double steerCmd = 0;
-
-    if (tv == 0.0f) {
-      // We don't see the target, seek for the target by spinning in place at a safe
-      // speed.
-      steerCmd = 0.3f;
-    } else {
-      // We do see the target, execute aiming code
-
-      steerCmd = Kp * tx;
-    }
-
-    leftSteering += steerCmd;
-    rightSteering -= steerCmd;
-  }
-
   public void RotateTracking() {
     setLedMode(3);
 
     setCamMode(0);
-
+    if(Robot.mDrivetrain.getAutoPress()){
+      kI = 0;
+    }
+    
     if (tv < 1.0) {
       LimelightHasValidTarget = false;
       rightSteering = 0.0;
       leftSteering = 0.0;
       return;
     }
-
+    else{
     LimelightHasValidTarget = true;
 
-    double steerCmd = 0;
-    /*
-     * if(tx > 1.0){ steerCmd = Kp*steerError - minSteer; } else if(tx < 1.0){
-     * steerCmd = Kp*steerError + minSteer; }
-     */
-    steerCmd = Kp * tx;
+    steerCmd = 0;
+    errorI += tx * timeStep;
 
-    rightSteering -= steerCmd;
-    leftSteering += steerCmd;
+    if (tx > 1.0) {
+      steerCmd = Kp * tx - minSteer + kI * errorI;
+    } else if (tx < 1.0) {
+      steerCmd = Kp * tx + minSteer + kI * errorI;
+    }
+    if(tx<2.0 && tx>-2.0){
+      steerCmd = 0;
+    }
+    
+
+    // steerCmd = Kp * tx;
+
+    rightSteering = steerCmd;
+    leftSteering = -steerCmd;
 
     // setCamMode(1);
     // setLedMode(1);
   }
 
+  
+  }
   public void DriveTracking() {
-   
+
     double drive_cmd = (DESIRED_TARGET_AREA - ta) * DRIVE_K;
-    
-            rightSteering += drive_cmd;
-            leftSteering += drive_cmd;
-    
+
+    rightSteering += drive_cmd;
+    leftSteering += drive_cmd;
+
   }
 
   public void setLedMode(int mode) {
@@ -132,18 +122,18 @@ public class Limelight {
     return tx;
   }
 
-  private void tunePID(){
-		if (Robot.leftJoystick.getRawButton(7) == true) {
-			Kp = Kp + 10e-3;
-		}
-		if (Robot.leftJoystick.getRawButton(8) == true) {
-			Kp = Kp - 10e-3;
+  private void tunePID() {
+    if (Robot.leftJoystick.getRawButton(7) == true) {
+      Kp = Kp + 10e-3;
+    }
+    if (Robot.leftJoystick.getRawButton(8) == true) {
+      Kp = Kp - 10e-3;
     }
     if (Robot.leftJoystick.getRawButton(9) == true) {
-			DRIVE_K = DRIVE_K + 10e-3;
-		}
-		if (Robot.leftJoystick.getRawButton(10) == true) {
-			DRIVE_K = DRIVE_K - 10e-3;
+      DRIVE_K = DRIVE_K + 10e-3;
+    }
+    if (Robot.leftJoystick.getRawButton(10) == true) {
+      DRIVE_K = DRIVE_K - 10e-3;
     }
   }
 

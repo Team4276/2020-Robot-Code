@@ -70,6 +70,8 @@ public class Drivetrain {
     public boolean methodInit = true;
     private Notifier m_follower_notifier;
 
+    public boolean autoPress;
+
     double deadband = 0.05;
 
     // Cheesy Drive Constants
@@ -177,9 +179,11 @@ public class Drivetrain {
         checkForGearShift();
 
         if (Robot.rightJoystick.getRawButton(1)) {
+            autoPress = true;
             currentMode = DriveMode.AUTO;
 
         } else {
+            autoPress = false;
             currentMode = DEFAULT_MODE;
         }
 
@@ -201,7 +205,7 @@ public class Drivetrain {
         switch (currentMode) {
 
         case AUTO:
-
+            
             LimelightRotate();
 
             break;
@@ -473,7 +477,7 @@ public class Drivetrain {
     }
 
     public void LimelightFindTarget() {
-        Robot.mLimelight.seeking();
+        
         assignMotorPower(-Robot.mLimelight.rightSteering, Robot.mLimelight.leftSteering);
     }
 
@@ -488,6 +492,10 @@ public class Drivetrain {
     public void resetAuto() {
         methodInit = true;
         timerNum = 1;
+    }
+
+    public boolean getAutoPress(){
+        return autoPress;
     }
 /*
     public Rotation2d getHeading() {

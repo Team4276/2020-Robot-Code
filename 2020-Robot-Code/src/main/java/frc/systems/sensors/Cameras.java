@@ -12,7 +12,7 @@ public class Cameras {
 	private final int MAIN_RES_X = 240;
 	private final int MAIN_RES_Y = 180;
 	private final int MAIN_FPS = 25;
-	private final int MAIN_EXPOSURE = 10;
+	private final int MAIN_EXPOSURE = -4;
 
 
 	public Cameras() {
@@ -22,7 +22,7 @@ public class Cameras {
 		mainCamera.setResolution(MAIN_RES_X, MAIN_RES_Y);
 		mainCamera.setFPS(MAIN_FPS);
 		//mainCamera.setExposureAuto();
-		mainCamera.setExposureManual(30);
+		mainCamera.setExposureManual(MAIN_EXPOSURE);
 		mainCamera.setExposureHoldCurrent();
 		
 	}

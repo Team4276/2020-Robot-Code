@@ -48,7 +48,7 @@ public class Shooter {
     public double shooterF = 0.00019;
     boolean usePID = true; // set to false if pid is not working properly
 
-    double desiredRPM = 5000;
+    double desiredRPM = 3500;
     final double desiredRPMA = -1*desiredRPM;
 
     double CurrentRPMA;// = encoderSideA.getPosition();

@@ -86,6 +86,9 @@ public class Robot extends TimedRobot {
 
   private final I2C.Port i2cPort = I2C.Port.kOnboard;
 
+  boolean isFirstTime = true;
+
+
   @Override
   public void robotInit() {
     AutoSelecter = new SelectAuto();
@@ -163,21 +166,29 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
+    if(isFirstTime)
+    {
+      isFirstTime = false;
+    }
+    
     switch (m_autoSelected) {
     case kstraightShoot:
       AutoSelecter.setMode("StraightShoot");
       AutoSelecter.selectRoutine();
       break;
     case kDriveOffLine:
+     // default:
       AutoSelecter.setMode("DriveOffLine");
       AutoSelecter.selectRoutine();
       break;
     case kDefaultAuto:
-    default:
+      default:
       // Put default auto code here
-      mDrivetrain.assignMotorPower(0.0, 0.0);
+      mDrivetrain.assignMotorPower(0.2, -0.2);
       break;
+      
     }
+    isFirstTime = true;
   }
 
   @Override

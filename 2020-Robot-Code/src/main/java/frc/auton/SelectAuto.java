@@ -13,13 +13,16 @@ import frc.systems.Shooter;
 import frc.systems.Intake;
 import frc.systems.sensors.Limelight;
 import frc.utilities.SoftwareTimer;
+import edu.wpi.first.wpilibj.Timer;
 
 public class SelectAuto {
     SoftwareTimer delay;
+    Timer d = new Timer();
     Drivetrain Drive = Robot.mDrivetrain;
     Shooter shot = Robot.mShooter;
     Intake inta = Robot.mIntake;
     Limelight lime = Robot.mLimelight;
+    boolean firstTime = true;
 
     public enum AutoMode {
         DriveOffLine, StraightShoot, MiddleShoot, SideShoot, DoNothing;
@@ -33,13 +36,30 @@ public class SelectAuto {
     }
 
     public void selectRoutine() {
+        //firstTime = true;
         switch (currentSelection) {
         case DoNothing:
             Drive.assignMotorPower(0, 0);
-        break;
+            break;
         case DriveOffLine:
-            Drive.assignMotorPower(0.5, -0.5);
-            delay.setTimer(3);
+        
+        System.out.println(d.get());
+        if(firstTime) {
+            firstTime = false;
+            
+            
+            Drive.assignMotorPower(0.2, -0.2);
+            d.start();
+        }
+            else {
+                while (d.get()>0.5) {
+                    if(d.get()<0.4)
+                    Drive.assignMotorPower(0.2, -0.2);
+                    else{
+                        Drive.assignMotorPower(0, 0);
+                    }
+                }
+            } 
             break;
         // basic command to find goal and shoot if lined up with it
         case StraightShoot:
@@ -72,7 +92,7 @@ public class SelectAuto {
         }
     }
 
-    public void setMode(String select) {
+    public void setMode(final String select) {
         if (select.equals("StraightShoot")) {
             currentSelection = AutoMode.StraightShoot;
         } else if (select.equals("MiddleShoot")) {
