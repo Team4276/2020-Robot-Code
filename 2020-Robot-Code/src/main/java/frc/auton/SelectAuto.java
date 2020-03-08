@@ -27,7 +27,8 @@ public class SelectAuto {
     private final int TARGET_HIGH_GOAL = 1;
     private final int START_SHOOTER = 2;
     private final int FEED_BALLS = 3;
-    private final int END_AUTO = 4;
+    private final int INTAKE = 4;
+    private final int END_AUTO = 5;
 
     // State Machine Common Control Parameters
     private int currentStep = 0;
@@ -50,12 +51,12 @@ public class SelectAuto {
         case BACK_UP:
             // Step Entry
             if (performInitProcessing) {
-                stateDeadmanTimer.setTimer(3);
+                stateDeadmanTimer.setTimer(2);
                 performInitProcessing = false;
                 proceedToNextState = false;
             }
             // Step Processing
-            Robot.mDrivetrain.assignMotorPower(0.4, -0.4);
+            Robot.mDrivetrain.assignMotorPower(-0.35, 0.35);
             // Step Exit Criteria Check
             if (stateDeadmanTimer.isExpired()) {
                 proceedToNextState = true;
@@ -91,7 +92,7 @@ public class SelectAuto {
         case START_SHOOTER:
             // Step Entry
             if (performInitProcessing) {
-                stateDeadmanTimer.setTimer(3);
+                stateDeadmanTimer.setTimer(1);
                 performInitProcessing = false;
                 proceedToNextState = false;
             }
@@ -111,7 +112,7 @@ public class SelectAuto {
         case FEED_BALLS:
             // Step Entry
             if (performInitProcessing) {
-                stateDeadmanTimer.setTimer(10);
+                stateDeadmanTimer.setTimer(5);
                 performInitProcessing = false;
                 proceedToNextState = false;
             }
@@ -129,67 +130,60 @@ public class SelectAuto {
                 proceedToNextState = false;
             }
             break;
+        case INTAKE:
+            // Step Entry
+            if (performInitProcessing) {
+                stateDeadmanTimer.setTimer(10);
+                performInitProcessing = false;
+                proceedToNextState = false;
+            }
+            // Step Processing
+            Robot.mShooter.shoot();
+            Robot.mShooter.ballTransfer();
+            Robot.mIntake.intake();
+            // Step Exit Criteria Check
+            if (stateDeadmanTimer.isExpired()) {
+                proceedToNextState = true;
+            }
+            // Step Exit
+            if (proceedToNextState) {
+                currentStep++;
+                performInitProcessing = true;
+                proceedToNextState = false;
+            }
+            break;
         case END_AUTO:
             break;
         }
 
     }
-/*
-    public void selectRoutine() {
-        // firstTime = true;
-        switch (currentSelection) {
-        case DoNothing:
-            Drive.assignMotorPower(0, 0);
-            break;
-        case DriveOffLine:
 
-            System.out.println(d.get());
-            if (firstTime) {
-                firstTime = false;
-
-                Drive.assignMotorPower(0.2, -0.2);
-                d.start();
-            } else {
-                while (d.get() > 0.5) {
-                    if (d.get() < 0.4)
-                        Drive.assignMotorPower(0.2, -0.2);
-                    else {
-                        Drive.assignMotorPower(0, 0);
-                    }
-                }
-            }
-            break;
-        // basic command to find goal and shoot if lined up with it
-        case StraightShoot:
-
-            delay.setTimer(5);
-            Drive.LimelightRotate();
-            if (lime.LimelightHasValidTarget) {
-                shot.shoot();
-            }
-            if (delay.isExpired()) {
-                shot.stop();
-                Drive.assignMotorPower(0, 0);
-            }
-            delay.setTimer(0.5);
-            if (delay.isExpired()) {
-                Drive.assignMotorPower(-0.5, 0.5);
-            }
-
-            break;
-
-        // if other robot wants to start in front of goal
-        case MiddleShoot:
-
-            break;
-
-        // if we have to start on the far side
-        case SideShoot:
-
-            break;
-        }
-    }
-*/
+    /*
+     * public void selectRoutine() { // firstTime = true; switch (currentSelection)
+     * { case DoNothing: Drive.assignMotorPower(0, 0); break; case DriveOffLine:
+     * 
+     * System.out.println(d.get()); if (firstTime) { firstTime = false;
+     * 
+     * Drive.assignMotorPower(0.2, -0.2); d.start(); } else { while (d.get() > 0.5)
+     * { if (d.get() < 0.4) Drive.assignMotorPower(0.2, -0.2); else {
+     * Drive.assignMotorPower(0, 0); } } } break; // basic command to find goal and
+     * shoot if lined up with it case StraightShoot:
+     * 
+     * delay.setTimer(5); Drive.LimelightRotate(); if (lime.LimelightHasValidTarget)
+     * { shot.shoot(); } if (delay.isExpired()) { shot.stop();
+     * Drive.assignMotorPower(0, 0); } delay.setTimer(0.5); if (delay.isExpired()) {
+     * Drive.assignMotorPower(-0.5, 0.5); }
+     * 
+     * break;
+     * 
+     * // if other robot wants to start in front of goal case MiddleShoot:
+     * 
+     * break;
+     * 
+     * // if we have to start on the far side case SideShoot:
+     * 
+     * break; } }
+     */
     public void setMode(final String select) {
         if (select.equals("StraightShoot")) {
             currentSelection = AutoMode.StraightShoot;

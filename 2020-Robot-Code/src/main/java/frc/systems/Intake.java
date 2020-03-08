@@ -30,8 +30,6 @@ public class Intake {
     VictorSPX upperMotor;
     TalonSRX pivoteMotor;
 
-    Shooter shoot = Robot.mShooter;
-
     public Intake(int upperport, int lowerport ){//int pivoteport, int inBetweenPort, int pistonA, int pistonB) {
         lowerMotor = new VictorSPX(lowerport);
         upperMotor = new VictorSPX(upperport);
@@ -47,30 +45,18 @@ public class Intake {
          else {
             stop();
         }
-/*
-        if (Robot.xboxJoystick.getRawAxis(Xbox.RAxisY) > 0.1) {
-            pivoteup();
-        } else if (Robot.xboxJoystick.getRawAxis(Xbox.RAxisY) < -0.1) {
-            pivotedown();
-        } else {
-            pivoteMotor.set(ControlMode.PercentOutput, 0);
-        }
-*/
     }
 
     public void intake() {
-        //lowerMotor.set(ControlMode.PercentOutput, intakeDownSpeed);
+    ;
         upperMotor.set(ControlMode.PercentOutput, intakeUpSpeed);
-        //Robot.mShooter.ballTransfer();
-       // shoot.transferPiston.set(Value.kForward);
+
     }
 
     public void outtake() {
-        lowerMotor.set(ControlMode.PercentOutput, 0.6);
+        
         upperMotor.set(ControlMode.PercentOutput, outtakeUpSpeed);
-        //shoot.transferPiston.set(Value.kReverse);
-        //shoot.inBetween.set(ControlMode.PercentOutput, -0.7);
-        //shoot.outtake();
+        Robot.mShooter.outtake();
     }
 
     public void stop() {
