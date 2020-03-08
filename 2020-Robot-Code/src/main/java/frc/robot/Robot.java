@@ -88,7 +88,6 @@ public class Robot extends TimedRobot {
 
   boolean isFirstTime = true;
 
-
   @Override
   public void robotInit() {
     AutoSelecter = new SelectAuto();
@@ -166,29 +165,20 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousPeriodic() {
-    if(isFirstTime)
-    {
+    if (isFirstTime) {
       isFirstTime = false;
     }
-    
+
     switch (m_autoSelected) {
-    case kstraightShoot:
-      AutoSelecter.setMode("StraightShoot");
-      AutoSelecter.selectRoutine();
-      break;
-    case kDriveOffLine:
-     // default:
-      AutoSelecter.setMode("DriveOffLine");
-      AutoSelecter.selectRoutine();
-      break;
-    case kDefaultAuto:
-      default:
+
+    default:
       // Put default auto code here
-      mDrivetrain.assignMotorPower(0.2, -0.2);
+      // mDrivetrain.assignMotorPower(0.2, -0.2);
+      AutoSelecter.performAuto();
       break;
-      
+
     }
-    isFirstTime = true;
+
   }
 
   @Override

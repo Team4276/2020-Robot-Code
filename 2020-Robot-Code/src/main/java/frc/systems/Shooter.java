@@ -42,9 +42,9 @@ public class Shooter {
     CANPIDController pidA, pidB;
 
     double kP, kI, kD, kIz, kFF, kMax, kMin;
-    public double shooterP = 0.000027;
+    public double shooterP = 0.000010;
     public double shooterI = 0;
-    public double shooterD = 3;
+    public double shooterD = 0;
     public double shooterF = 0.00019;
     boolean usePID = true; // set to false if pid is not working properly
 

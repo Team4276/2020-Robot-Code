@@ -19,11 +19,11 @@ public class Cameras {
 		
 		mainCamera = CameraServer.getInstance().startAutomaticCapture(0);
 
-		mainCamera.setResolution(MAIN_RES_X, MAIN_RES_Y);
-		mainCamera.setFPS(MAIN_FPS);
-		//mainCamera.setExposureAuto();
-		mainCamera.setExposureManual(MAIN_EXPOSURE);
-		mainCamera.setExposureHoldCurrent();
+		//mainCamera.setResolution(MAIN_RES_X, MAIN_RES_Y);
+		//mainCamera.setFPS(MAIN_FPS);
+		mainCamera.setExposureAuto();
+		//mainCamera.setExposureManual(MAIN_EXPOSURE);
+		//mainCamera.setExposureHoldCurrent();
 		
 	}
 
