@@ -20,52 +20,117 @@ import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
+import frc.utilities.SoftwareTimer;
+import edu.wpi.first.wpilibj.Timer;
+
 public class Intake {
-    double intakeUpSpeed = 0.75;
+    double intakeUpSpeed = 0.60;
     double intakeDownSpeed = -1.0;
 
-    double outtakeUpSpeed = -0.75;
+    double outtakeUpSpeed = -0.60;
 
-    VictorSPX lowerMotor;
-    VictorSPX upperMotor;
+    //VictorSPX lowerMotor;
+    VictorSPX armMotor;
+    //VictorSPX codyMotor;
     TalonSRX pivoteMotor;
+    int n = 10;//initial timer for pulse method
+    //SoftwareTimer extendTimer;
+    boolean isExtend = false;
+    Timer delayerArm;
 
-    public Intake(int upperport, int lowerport ){//int pivoteport, int inBetweenPort, int pistonA, int pistonB) {
-        lowerMotor = new VictorSPX(lowerport);
-        upperMotor = new VictorSPX(upperport);
+    public Intake( int upperport ){//int pivoteport, int inBetweenPort, int pistonA, int pistonB) {
+        armMotor = new VictorSPX(upperport);
        // pivoteMotor = new TalonSRX(pivoteport);
     }
 
     public void performMainProcessing() {
-        if (Robot.xboxJoystick.getRawButton(Xbox.RB)) {
-            intake();
-        } else if(Robot.xboxJoystick.getRawButton(Xbox.LB)){
+        if (Robot.xboxJoystick.getRawButton(Xbox.LB)) {
             outtake();
+        }
+        else if(Robot.xboxJoystick.getRawButton(Xbox.RB)){
+            intake();
         }
          else {
             stop();
         }
+        /*if ( Robot.xboxJoystick.getRawAxis(Xbox.LAxisY) > 0.2 )
+        {
+            if( !isExtend )
+            {
+                delayerArm.delay(1.0);
+            }
+            if( Robot.xboxJoystick.getRawAxis(Xbox.LAxisY) > 0.2 )
+            {
+             pulse();
+             isExtend = Robot.xboxJoystick.getRawAxis(Xbox.LAxisY) > 0.2;
+            }
+        }
+        else if( !isExtend)
+        {
+            stop();
+            isExtend = Robot.xboxJoystick.getRawAxis(Xbox.LAxisY) > 0.2;
+        }*/
+/*
+        extendTimer.setTimer(n);
+        if (n == 0)
+        {
+            if ( isExtend )
+            {
+                pulse();
+                extendTimer.setTimer(1);
+                n = 1;
+                isExtend = Robot.xboxJoystick.getRawAxis(Xbox.LAxisY) > 0.2;
+            }
+            else
+            {
+                Robot.mIndexer.stop();
+                isExtend = Robot.xboxJoystick.getRawAxis(Xbox.LAxisY) > 0.2;
+            }
+        }
+        else if( isExtend )
+        {
+            isExtend = Robot.xboxJoystick.getRawAxis(Xbox.LAxisY) > 0.2;
+            extendTimer.setTimer(0);
+        }
+        else
+        {
+            Robot.mIndexer.stop();
+            extendTimer.setTimer(0);
+            isExtend = Robot.xboxJoystick.getRawAxis(Xbox.LAxisY) > 0.2;
+        }
+        */
     }
 
     public void intake() {
-    ;
-        upperMotor.set(ControlMode.PercentOutput, intakeUpSpeed);
+    
+        armMotor.set(ControlMode.PercentOutput, intakeUpSpeed);
+        Robot.mIndexer.spin();
 
     }
 
     public void outtake() {
         
-        upperMotor.set(ControlMode.PercentOutput, outtakeUpSpeed);
+        armMotor.set(ControlMode.PercentOutput, outtakeUpSpeed);
+        Robot.mIndexer.back();
         Robot.mShooter.outtake();
     }
 
     public void stop() {
         //lowerMotor.set(ControlMode.PercentOutput, 0);
-        upperMotor.set(ControlMode.PercentOutput, 0);
+        armMotor.set(ControlMode.PercentOutput, 0);
+        Robot.mIndexer.stop();
         //shoot.inBetween.set(ControlMode.PercentOutput, 0);
     }
 
-    public void pivoteup() {
+    
+
+    public void pulse()
+    {
+        //armMotor.set(ControlMode.PercentOutput, intakeUpSpeed);
+        Robot.mIndexer.spin();
+    }
+
+    /*public void pivoteup() {
         pivoteMotor.set(ControlMode.PercentOutput, 1.0);
     }
 
@@ -75,5 +140,5 @@ public class Intake {
 
     public void updateTelemetry() {
         SmartDashboard.putNumber("pivote angle", pivoteMotor.getSensorCollection().getQuadraturePosition());
-    }
+    }*/
 }

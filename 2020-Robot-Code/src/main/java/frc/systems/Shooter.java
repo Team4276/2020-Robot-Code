@@ -31,7 +31,6 @@ public class Shooter {
     CANSparkMax sideShootA;
     CANSparkMax sideShootB;
     TalonSRX flyWheel;
-    VictorSPX inBetween;
     Timer delayer;
 
     DoubleSolenoid transferPiston;
@@ -46,7 +45,7 @@ public class Shooter {
     public double shooterI = 0.0000002;
     public double shooterD = 0.0000009;
     public double shooterF = 0.00019;
-    boolean usePID = true; // set to false if pid is not working properly
+    boolean usePID = false; // set to false if pid is not working properly
 
     double desiredRPM = 3000;
     final double desiredRPMA = -1 * desiredRPM;
@@ -56,13 +55,13 @@ public class Shooter {
 
     boolean isShooting = false;
 
-    public Shooter(int shootportA, int shootSideB, int flyport, int pistonA, int pistonB, int inBetweenPort) {
+    public Shooter(int shootportA, int shootSideB, int flyport, int pistonA, int pistonB) {
         sideShootA = new CANSparkMax(shootportA, MotorType.kBrushless);
         sideShootB = new CANSparkMax(shootSideB, MotorType.kBrushless);
         flyWheel = new TalonSRX(flyport);
 
         transferPiston = new DoubleSolenoid(pistonA, pistonB);
-        inBetween = new VictorSPX(inBetweenPort);
+        
 
         encoderSideA = sideShootA.getEncoder();
         encoderSideB = sideShootB.getEncoder();
@@ -99,12 +98,22 @@ public class Shooter {
         if (Robot.xboxJoystick.getRawAxis(Xbox.RT) > 0.2) {
             shoot();
             if (isShooting == false) {
-                delayer.delay(1);
+                delayer.delay(0.75);
             }
-            ballTransfer();
+            Robot.mIndexer.spin();
             isShooting = true;
+        }
+        else if (Robot.xboxJoystick.getRawAxis(Xbox.LT) > 0.2)
+        {
+            blue();
+            if (isShooting == false) {
+                delayer.delay(0.75);
+            }
+            Robot.mIndexer.spin();
+            isShooting = true;
+        }
 
-        } else if (Robot.xboxJoystick.getRawButton(Xbox.LB)) {
+         else if (Robot.xboxJoystick.getRawButton(Xbox.LB)) {
             outtake();
         } else {
             stop();
@@ -120,17 +129,24 @@ public class Shooter {
             pidB.setReference(desiredRPM, ControlType.kVelocity);
 
         } else {
-            sideShootA.set(-0.5);
-            sideShootB.set(0.5);
-            // flyWheel.set(ControlMode.PercentOutput, -1.0);
+            sideShootA.set(0.53);
+            sideShootB.set(-0.53);
+            flyWheel.set(ControlMode.PercentOutput, -1.0);
         }
     }
 
+    public void blue()
+    {
+        sideShootA.set(0.46);
+            sideShootB.set(-0.46);
+            flyWheel.set(ControlMode.PercentOutput, -1.0);
+    }
+
     public void outtake() {
-        sideShootA.set(1.0);
-        sideShootB.set(-1.0);
-        flyWheel.set(ControlMode.PercentOutput, 1.0);
-        inBetween.set(ControlMode.PercentOutput, 0.6);
+        sideShootA.set(-0.5);
+        sideShootB.set(0.5);
+        flyWheel.set(ControlMode.PercentOutput, 0.75);
+        //inBetween.set(ControlMode.PercentOutput, 0.6);
         // transferPiston.set(Value.kReverse);
         // inBetween.set(ControlMode.PercentOutput, -0.7);
     }
@@ -141,15 +157,15 @@ public class Shooter {
         pidA.setReference(0, ControlType.kDutyCycle);
         pidB.setReference(0, ControlType.kDutyCycle);
         flyWheel.set(ControlMode.PercentOutput, 0);
-        inBetween.set(ControlMode.PercentOutput, 0);
+        //inBetween.set(ControlMode.PercentOutput, 0);
         isShooting = false;
     }
 
-    public void ballTransfer() {
+    /*public void ballTransfer() {
         flyWheel.set(ControlMode.PercentOutput, -0.65);
         transferPiston.set(Value.kReverse);
-        inBetween.set(ControlMode.PercentOutput, -0.6);
-    }
+        
+    }*/
 
     public void getEncoder() {
         CurrentRPMA = encoderSideA.getPosition();

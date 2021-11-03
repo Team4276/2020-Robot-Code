@@ -8,10 +8,10 @@
 package frc.auton;
 
 import frc.robot.Robot;
-import frc.systems.Drivetrain;
-import frc.systems.Shooter;
-import frc.systems.Intake;
-import frc.systems.sensors.Limelight;
+//import frc.systems.Drivetrain;
+//import frc.systems.Shooter;
+//import frc.systems.Intake;
+//import frc.systems.sensors.Limelight;
 import frc.utilities.SoftwareTimer;
 
 import edu.wpi.first.wpilibj.Timer;
@@ -118,7 +118,7 @@ public class SelectAuto {
             }
             // Step Processing
             Robot.mShooter.shoot();
-            Robot.mShooter.ballTransfer();
+            //Robot.mShooter.ballTransfer();
             // Step Exit Criteria Check
             if (stateDeadmanTimer.isExpired()) {
                 proceedToNextState = true;
@@ -139,7 +139,7 @@ public class SelectAuto {
             }
             // Step Processing
             Robot.mShooter.shoot();
-            Robot.mShooter.ballTransfer();
+            //Robot.mShooter.ballTransfer();
             Robot.mIntake.intake();
             // Step Exit Criteria Check
             if (stateDeadmanTimer.isExpired()) {

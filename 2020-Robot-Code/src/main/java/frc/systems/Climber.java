@@ -19,7 +19,7 @@ public class Climber {
     }
 
     public void performMainProcessing() {
-        if (Robot.xboxJoystick.getRawAxis(Xbox.LT) > 0.2){
+        if (Robot.xboxJoystick.getRawAxis(Xbox.LAxisY) > 0.2){
             dubSol.set(Value.kForward);
         }
         else {

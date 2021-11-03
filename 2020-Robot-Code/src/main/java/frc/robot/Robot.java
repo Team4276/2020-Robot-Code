@@ -12,13 +12,13 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Notifier;
-import edu.wpi.first.wpilibj.I2C;
+//import edu.wpi.first.wpilibj.I2C;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import com.analog.adis16448.frc.ADIS16448_IMU;
+//import com.analog.adis16448.frc.ADIS16448_IMU;
 
 import frc.systems.sensors.Cameras;
-import frc.systems.sensors.VisualOdometer;
+//import frc.systems.sensors.VisualOdometer;
 //import frc.systems.sensors.ColorSen;
 import frc.systems.sensors.Limelight;
 
@@ -26,10 +26,12 @@ import frc.utilities.RoboRioPorts;
 import frc.utilities.SoftwareTimer;
 
 import frc.systems.Drivetrain;
+import frc.systems.Indexer;
 import frc.systems.Intake;
 import frc.systems.Shooter;
-import frc.systems.Turntable;
+//import frc.systems.Turntable;
 import frc.systems.ArmPivot;
+//import frc.systems.ArmPiv;
 import frc.systems.Climber;
 
 import frc.auton.SelectAuto;
@@ -68,23 +70,28 @@ public class Robot extends TimedRobot {
   Notifier lime;
   Notifier armGroup;
   public static ArmPivot mArmPivot;
+  Notifier armPivGroup;
+  //public static ArmPiv mArmPiv;
 
   Notifier driveRateGroup;
   public static Drivetrain mDrivetrain;
 
   Notifier intakeRateGroup;
   public static Intake mIntake;
+  public static Indexer mIndexer;
+  Notifier indexerRateGroup;
 
   Notifier shooterRateGroup;
   public static Shooter mShooter;
 
-  Notifier turntableRateGroup;
-  public static Turntable mTurntable;
-
+  //Notifier turntableRateGroup;
+  //public static Turntable mTurntable;
+ 
   Notifier climberRateGroup;
   public static Climber mClimber;
 
-  private final I2C.Port i2cPort = I2C.Port.kOnboard;
+
+  //private final I2C.Port i2cPort = I2C.Port.kOnboard;
 
   boolean isFirstTime = true;
 
@@ -119,13 +126,14 @@ public class Robot extends TimedRobot {
         RoboRioPorts.DRIVE_DOUBLE_SOLENOID_FWD, RoboRioPorts.DRIVE_DOUBLE_SOLENOID_REV, RoboRioPorts.DIO_DRIVE_RIGHT_A,
         RoboRioPorts.DIO_DRIVE_RIGHT_B, RoboRioPorts.DIO_DRIVE_LEFT_A, RoboRioPorts.DIO_DRIVE_LEFT_B);
 
-    mIntake = new Intake(RoboRioPorts.CAN_INTAKE_UP, RoboRioPorts.CAN_BALL_TRANSFER);
+    mIntake = new Intake(RoboRioPorts.CAN_INTAKE_UP);
+    mIndexer = new Indexer(RoboRioPorts.CAN_BALL_TRANSFER);
     mShooter = new Shooter(RoboRioPorts.CAN_SHOOTER_SHOOTA, RoboRioPorts.CAN_SHOOTER_SHOOTB,
-        RoboRioPorts.CAN_SHOOTER_FLY, RoboRioPorts.TRANSER_PISTON_REV, RoboRioPorts.TRANSFER_PISTON_FWD,
-        RoboRioPorts.CAN_BALL_TRANSFER);
+        RoboRioPorts.CAN_SHOOTER_FLY, RoboRioPorts.TRANSER_PISTON_REV, RoboRioPorts.TRANSFER_PISTON_FWD);
 
     mArmPivot = new ArmPivot(RoboRioPorts.CAN_INTAKE_PIV);
-
+    //mArmPiv = new ArmPiv(RoboRioPorts.CAN_CLIMBER_DUBSOLA, RoboRioPorts.CAN_CLIMBER_DUBSOLB);
+    //mArmPiv = new ArmPiv(RoboRioPorts.CAN_BALL_TRANSFER);
     mClimber = new Climber(RoboRioPorts.CAN_CLIMBER_DUBSOLA, RoboRioPorts.CAN_CLIMBER_DUBSOLB);
 
     /*
@@ -138,14 +146,18 @@ public class Robot extends TimedRobot {
     shooterRateGroup = new Notifier(mShooter::performMainProcessing);
     armGroup = new Notifier(mArmPivot::performMainProcessing);
     climberRateGroup = new Notifier(mClimber::performMainProcessing);
+    indexerRateGroup = new Notifier(mIndexer :: performMainProcessing);
+    //armPivGroup = new Notifier(mArmPiv::performMainProcessing);//Zook wrote this!
     // turntableRateGroup = new Notifier(mTurntable::performMainProcessing);
 
     driveRateGroup.startPeriodic(0.05);
     intakeRateGroup.startPeriodic(0.1);
     shooterRateGroup.startPeriodic(0.1);
+    indexerRateGroup.startPeriodic(0.1);
     armGroup.startPeriodic(0.1);
     lime.startPeriodic(0.1);
     climberRateGroup.startPeriodic(0.1);
+    //armPivGroup.startPeriodic(0.1);//Zook wrote this!
     // turntableRateGroup.startPeriodic(0.1);
   }
 
