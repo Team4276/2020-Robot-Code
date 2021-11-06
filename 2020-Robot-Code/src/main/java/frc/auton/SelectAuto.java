@@ -97,7 +97,7 @@ public class SelectAuto {
                 proceedToNextState = false;
             }
             // Step Processing
-            Robot.mShooter.shoot();
+            //Robot.mShooter.shoot();
             // Step Exit Criteria Check
             if (stateDeadmanTimer.isExpired()) {
                 proceedToNextState = true;
@@ -117,7 +117,7 @@ public class SelectAuto {
                 proceedToNextState = false;
             }
             // Step Processing
-            Robot.mShooter.shoot();
+            //Robot.mShooter.shoot();
             //Robot.mShooter.ballTransfer();
             // Step Exit Criteria Check
             if (stateDeadmanTimer.isExpired()) {
@@ -138,7 +138,7 @@ public class SelectAuto {
                 proceedToNextState = false;
             }
             // Step Processing
-            Robot.mShooter.shoot();
+            //Robot.mShooter.shoot();
             //Robot.mShooter.ballTransfer();
             Robot.mIntake.intake();
             // Step Exit Criteria Check

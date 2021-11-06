@@ -117,10 +117,10 @@ public class Robot extends TimedRobot {
         RoboRioPorts.DRIVE_DOUBLE_SOLENOID_FWD, RoboRioPorts.DRIVE_DOUBLE_SOLENOID_REV, RoboRioPorts.DIO_DRIVE_RIGHT_A,
         RoboRioPorts.DIO_DRIVE_RIGHT_B, RoboRioPorts.DIO_DRIVE_LEFT_A, RoboRioPorts.DIO_DRIVE_LEFT_B);
 
-    mIntake = new Intake(RoboRioPorts.CAN_INTAKE_UP, RoboRioPorts.CAN_BALL_TRANSFER);
+    mIntake = new Intake(RoboRioPorts.CAN_INTAKE_UP);
     mShooter = new Shooter(RoboRioPorts.CAN_SHOOTER_SHOOTA, RoboRioPorts.CAN_SHOOTER_SHOOTB,
-        RoboRioPorts.CAN_SHOOTER_FLY, RoboRioPorts.TRANSER_PISTON_REV, RoboRioPorts.TRANSFER_PISTON_FWD,
-        RoboRioPorts.CAN_BALL_TRANSFER);
+        RoboRioPorts.CAN_SHOOTER_FLY, RoboRioPorts.TRANSER_PISTON_REV, RoboRioPorts.TRANSFER_PISTON_FWD);
+    mIndexer = new Indexer(RoboRioPorts.CAN_BALL_TRANSFER);
 
     mArmPivot = new ArmPivot(RoboRioPorts.CAN_INTAKE_PIV);
 

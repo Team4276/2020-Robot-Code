@@ -112,14 +112,14 @@ public class Robot extends TimedRobot {
     xboxJoystick = new Joystick(2);
 
     systemTimer = new Timer();
-    mLimelight = new Limelight();
+    //mLimelight = new Limelight();
     // m_ColorSen = new ColorSen(i2cPort);
 
-    robotCameraSystem = new Cameras();
+    //robotCameraSystem = new Cameras();
 
-    leftJoystick = new Joystick(0);
-    rightJoystick = new Joystick(1);
-    xboxJoystick = new Joystick(2);
+    //leftJoystick = new Joystick(0);
+    //rightJoystick = new Joystick(1);
+    //xboxJoystick = new Joystick(2);
 
     mDrivetrain = new Drivetrain(true, RoboRioPorts.CAN_DRIVE_L1, RoboRioPorts.CAN_DRIVE_L2, RoboRioPorts.CAN_DRIVE_L3,
         RoboRioPorts.CAN_DRIVE_R1, RoboRioPorts.CAN_DRIVE_R2, RoboRioPorts.CAN_DRIVE_R3,
@@ -127,45 +127,44 @@ public class Robot extends TimedRobot {
         RoboRioPorts.DIO_DRIVE_RIGHT_B, RoboRioPorts.DIO_DRIVE_LEFT_A, RoboRioPorts.DIO_DRIVE_LEFT_B);
 
     mIntake = new Intake(RoboRioPorts.CAN_INTAKE_UP);
-    mIndexer = new Indexer(RoboRioPorts.CAN_BALL_TRANSFER);
-    mShooter = new Shooter(RoboRioPorts.CAN_SHOOTER_SHOOTA, RoboRioPorts.CAN_SHOOTER_SHOOTB,
-        RoboRioPorts.CAN_SHOOTER_FLY, RoboRioPorts.TRANSER_PISTON_REV, RoboRioPorts.TRANSFER_PISTON_FWD);
+   // mIndexer new Indexer(RoboRioPorts.CAN_BALL_TRANSFER);
+      mShooter = new Shooter(RoboRioPorts.CAN_SHOOTER_SHOOTA, RoboRioPorts.CAN_SHOOTER_SHOOTB, RoboRioPorts.CAN_SHOOTER_FLY, RoboRioPorts.TRANSER_PISTON_REV, RoboRioPorts.TRANSFER_PISTON_FWD);
 
     mArmPivot = new ArmPivot(RoboRioPorts.CAN_INTAKE_PIV);
-    //mArmPiv = new ArmPiv(RoboRioPorts.CAN_CLIMBER_DUBSOLA, RoboRioPorts.CAN_CLIMBER_DUBSOLB);
-    //mArmPiv = new ArmPiv(RoboRioPorts.CAN_BALL_TRANSFER);
+    //mArmPiv = new ArmPiv(RoboRioPorts.CAN_CLIMBER_DUBSOLA, RoboRioPorts.CAN_CLIMBER_DUBSOLB); //using old climber pnue for lowering intake?
+    //mArmPiv = new ArmPiv(RoboRioPorts.CAN_BALL_TRANSFER); //ball transfer was to get balls from intake to shooter
     mClimber = new Climber(RoboRioPorts.CAN_CLIMBER_DUBSOLA, RoboRioPorts.CAN_CLIMBER_DUBSOLB);
 
     /*
      * mTurntable = new Turntable(RoboRioPorts.CAN_TURNTABLE_TURN,
      * RoboRioPorts.CODY_PISTON_FWD, RoboRioPorts.CODY_PISTON_REV);
      */
-    lime = new Notifier(mLimelight::updateTelementry);
+    //lime = new Notifier(mLimelight::updateTelementry);
     driveRateGroup = new Notifier(mDrivetrain::operatorDrive);
-    intakeRateGroup = new Notifier(mIntake::performMainProcessing);
-    shooterRateGroup = new Notifier(mShooter::performMainProcessing);
+    //intakeRateGroup = new Notifier(mIntake::performMainProcessing);
+    //shooterRateGroup = new Notifier(mShooter::performMainProcessing);
     armGroup = new Notifier(mArmPivot::performMainProcessing);
-    climberRateGroup = new Notifier(mClimber::performMainProcessing);
-    indexerRateGroup = new Notifier(mIndexer :: performMainProcessing);
+    //climberRateGroup = new Notifier(mClimber::performMainProcessing);
+    //indexerRateGroup = new Notifier(mIndexer :: performMainProcessing);
     //armPivGroup = new Notifier(mArmPiv::performMainProcessing);//Zook wrote this!
     // turntableRateGroup = new Notifier(mTurntable::performMainProcessing);
 
     driveRateGroup.startPeriodic(0.05);
-    intakeRateGroup.startPeriodic(0.1);
-    shooterRateGroup.startPeriodic(0.1);
-    indexerRateGroup.startPeriodic(0.1);
+    //intakeRateGroup.startPeriodic(0.1);
+    //shooterRateGroup.startPeriodic(0.1);
+   // indexerRateGroup.startPeriodic(0.1);
     armGroup.startPeriodic(0.1);
-    lime.startPeriodic(0.1);
-    climberRateGroup.startPeriodic(0.1);
+   // lime.startPeriodic(0.1);
+   // climberRateGroup.startPeriodic(0.1);
     //armPivGroup.startPeriodic(0.1);//Zook wrote this!
     // turntableRateGroup.startPeriodic(0.1);
   }
 
   @Override
   public void robotPeriodic() {
-    mLimelight.updateTelementry();
+    //mLimelight.updateTelementry();
     mDrivetrain.updateTelemetry();
-    mShooter.updateTelemetry();
+    //mShooter.updateTelemetry();
   }
 
   @Override
@@ -204,6 +203,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     // mShooter.updateTelemetry();
+    mIntake.performMainProcessing();
   }
 
   @Override
@@ -216,7 +216,7 @@ public class Robot extends TimedRobot {
   @Override
   public void disabledPeriodic() {
     mDrivetrain.updateTelemetry();
-    mShooter.updateTelemetry();
+   // mShooter.updateTelemetry();
     mLimelight.updateTelementry();
 
     super.disabledPeriodic();

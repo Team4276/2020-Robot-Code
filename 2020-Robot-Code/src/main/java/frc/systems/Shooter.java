@@ -56,21 +56,22 @@ public class Shooter {
     boolean isShooting = false;
 
     public Shooter(int shootportA, int shootSideB, int flyport, int pistonA, int pistonB) {
-        sideShootA = new CANSparkMax(shootportA, MotorType.kBrushless);
-        sideShootB = new CANSparkMax(shootSideB, MotorType.kBrushless);
+        // = new CANSparkMax(shootportA, MotorType.kBrushless);
+        //sideShootB = new CANSparkMax(shootSideB, MotorType.kBrushless);
         flyWheel = new TalonSRX(flyport);
+        SmartDashboard.putString("Intake","Init");
 
-        transferPiston = new DoubleSolenoid(pistonA, pistonB);
+        //transferPiston = new DoubleSolenoid(pistonA, pistonB);
         
 
-        encoderSideA = sideShootA.getEncoder();
-        encoderSideB = sideShootB.getEncoder();
+        //encoderSideA = sideShootA.getEncoder();
+        //encoderSideB = sideShootB.getEncoder();
 
-        pidA = sideShootA.getPIDController();
-        pidB = sideShootB.getPIDController();
+        //pidA = sideShootA.getPIDController();
+        //pidB = sideShootB.getPIDController();
 
-        pidA.setFeedbackDevice(encoderSideA);
-        pidB.setFeedbackDevice(encoderSideB);
+        //pidA.setFeedbackDevice(encoderSideA);
+        //pidB.setFeedbackDevice(encoderSideB);
 
         // pid constants
         kP = .001;
@@ -80,18 +81,18 @@ public class Shooter {
         kFF = 0;
         kMax = 1;
         kMin = -1;
-        pidA.setP(shooterP);
-        pidA.setI(shooterI);
-        pidA.setD(shooterD);
+        //pidA.setP(shooterP);
+        //pidA.setI(shooterI);
+        //pidA.setD(shooterD);
         // pidA.setIZone(kIz);
-        pidA.setFF(shooterF);
-        pidA.setOutputRange(kMin, kMax);
-        pidB.setP(shooterP);
-        pidB.setI(shooterI);
-        pidB.setD(shooterD);
-        pidB.setIZone(kIz);
-        pidB.setFF(shooterF);
-        pidB.setOutputRange(kMin, kMax);
+        //pidA.setFF(shooterF);
+        //pidA.setOutputRange(kMin, kMax);
+        //pidB.setP(shooterP);
+        //pidB.setI(shooterI);
+       // pidB.setD(shooterD);
+        //pidB.setIZone(kIz);
+        //pidB.setFF(shooterF);
+        //pidB.setOutputRange(kMin, kMax);
     }
 
     public void performMainProcessing() {
@@ -131,7 +132,7 @@ public class Shooter {
         } else {
             sideShootA.set(0.53);
             sideShootB.set(-0.53);
-            flyWheel.set(ControlMode.PercentOutput, -1.0);
+            //flyWheel.set(ControlMode.PercentOutput, -1.0);
         }
     }
 
@@ -139,12 +140,12 @@ public class Shooter {
     {
         sideShootA.set(0.46);
             sideShootB.set(-0.46);
-            flyWheel.set(ControlMode.PercentOutput, -1.0);
+           // flyWheel.set(ControlMode.PercentOutput, -1.0);
     }
 
     public void outtake() {
-        sideShootA.set(-0.5);
-        sideShootB.set(0.5);
+       // sideShootA.set(-0.5);
+       // sideShootB.set(0.5);
         flyWheel.set(ControlMode.PercentOutput, 0.75);
         //inBetween.set(ControlMode.PercentOutput, 0.6);
         // transferPiston.set(Value.kReverse);
@@ -154,11 +155,11 @@ public class Shooter {
     public void stop() {
         // sideShootA.set(0);
         // sideShootB.set(0);
-        pidA.setReference(0, ControlType.kDutyCycle);
-        pidB.setReference(0, ControlType.kDutyCycle);
-        flyWheel.set(ControlMode.PercentOutput, 0);
+        //pidA.setReference(0, ControlType.kDutyCycle);
+        //pidB.setReference(0, ControlType.kDutyCycle);
+        //flyWheel.set(ControlMode.PercentOutput, 0);
         //inBetween.set(ControlMode.PercentOutput, 0);
-        isShooting = false;
+        //isShooting = false;
     }
 
     /*public void ballTransfer() {

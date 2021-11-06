@@ -24,10 +24,10 @@ import frc.utilities.SoftwareTimer;
 import edu.wpi.first.wpilibj.Timer;
 
 public class Intake {
-    double intakeUpSpeed = 0.60;
+    double intakeUpSpeed = -0.90;
     double intakeDownSpeed = -1.0;
 
-    double outtakeUpSpeed = -0.60;
+    double outtakeUpSpeed = 0.90;
 
     //VictorSPX lowerMotor;
     VictorSPX armMotor;
@@ -44,14 +44,17 @@ public class Intake {
     }
 
     public void performMainProcessing() {
-        if (Robot.xboxJoystick.getRawButton(Xbox.LB)) {
+        if (Robot.xboxJoystick.getRawAxis(Xbox.RAxisY)>0.2) {
             outtake();
+            SmartDashboard.putString("Intake","Outtakking");
         }
-        else if(Robot.xboxJoystick.getRawButton(Xbox.RB)){
+        else if(Robot.xboxJoystick.getRawAxis(Xbox.RAxisY)<-0.2){
             intake();
+            SmartDashboard.putString("Intake","Intakking");
         }
          else {
             stop();
+            SmartDashboard.putString("Intake","Stopped");
         }
         /*if ( Robot.xboxJoystick.getRawAxis(Xbox.LAxisY) > 0.2 )
         {
@@ -104,21 +107,21 @@ public class Intake {
     public void intake() {
     
         armMotor.set(ControlMode.PercentOutput, intakeUpSpeed);
-        Robot.mIndexer.spin();
+        //Robot.mIndexer.spin();
 
     }
 
     public void outtake() {
         
         armMotor.set(ControlMode.PercentOutput, outtakeUpSpeed);
-        Robot.mIndexer.back();
+        //Robot.mIndexer.back();
         Robot.mShooter.outtake();
     }
 
     public void stop() {
         //lowerMotor.set(ControlMode.PercentOutput, 0);
         armMotor.set(ControlMode.PercentOutput, 0);
-        Robot.mIndexer.stop();
+        //Robot.mIndexer.stop();
         //shoot.inBetween.set(ControlMode.PercentOutput, 0);
     }
 
